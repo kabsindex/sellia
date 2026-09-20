@@ -1,16 +1,11 @@
 import "./index.css";
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import React from "react";
+import ReactDOM from "react-dom/client";
 import { App } from "./App";
 
-const rootElement = document.getElementById("root");
-
-if (!rootElement) {
-  throw new Error("Root element not found");
+const rootEl = document.getElementById("root");
+if (rootEl) {
+  document.documentElement.classList.remove("dark");
+  window.localStorage.removeItem("sellia:theme");
+  ReactDOM.createRoot(rootEl).render(<App />);
 }
-
-createRoot(rootElement).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
