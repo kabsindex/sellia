@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate, useParams } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   Grid2X2,
   Heart,
   Home,
   MapPin,
-  PhoneCall,
   Search,
   SearchX,
   ShieldCheck,
   ShoppingBag,
+  UserRound,
   WifiOff } from
 'lucide-react';
 import { SiFacebook, SiInstagram, SiTiktok } from 'react-icons/si';
@@ -24,6 +24,7 @@ import { openWhatsApp, storeUrl } from '../../utils/whatsapp';
 
 export function StorefrontLayout() {
   const { slug } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const {
     store,
@@ -39,6 +40,10 @@ export function StorefrontLayout() {
   const [minimumLoadingDone, setMinimumLoadingDone] = useState(false);
 
   const cartCount = cart.reduce((sum, line) => sum + line.quantity, 0);
+  const storefrontBase = `/${store.slug}`;
+  const showMobileNav =
+    !location.pathname.startsWith(`${storefrontBase}/produit/`) &&
+    location.pathname !== `${storefrontBase}/panier`;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -247,7 +252,7 @@ export function StorefrontLayout() {
         }
       </header>
 
-      <main className="flex-1 pb-28 md:pb-0">
+      <main className={`flex-1 ${showMobileNav ? 'pb-24' : 'pb-5'} md:pb-0`}>
         <Outlet />
       </main>
 
@@ -321,57 +326,58 @@ export function StorefrontLayout() {
         </div>
       </footer>
 
-      {/* Navigation mobile SELLIA BASIC */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 items-end gap-1 px-3 pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-18px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
+      {showMobileNav &&
+      <nav
+        aria-label="Navigation boutique"
+        className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 items-end gap-1 px-2 pt-2 pb-[max(0.55rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-18px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
         style={{ backgroundColor: theme.headerBg, borderTop: `1px solid ${theme.border}` }}>
         <NavLink
           to={`/${store.slug}`}
           end
-          className="flex flex-col items-center gap-1 text-[10px] font-medium"
+          className="flex flex-col items-center gap-1 py-1 text-[10px] font-medium"
           style={({ isActive }) => ({ color: isActive ? theme.accent : theme.muted })}>
           <Home className="size-5" />
           Accueil
         </NavLink>
         <NavLink
           to={`/${store.slug}/catalogue`}
-          className="flex flex-col items-center gap-1 text-[10px] font-medium"
+          className="flex flex-col items-center gap-1 py-1 text-[10px] font-medium"
           style={({ isActive }) => ({ color: isActive ? theme.accent : theme.muted })}>
           <Grid2X2 className="size-5" />
           Catégories
         </NavLink>
-        <button
-          type="button"
-          onClick={() =>
-          openWhatsApp(
-            store.whatsapp,
-            `Bonjour 👋 J'ai une question sur ${store.name} (${storeUrl(store)}).`
-          )
-          }
-          className="-mt-6 flex flex-col items-center gap-1 text-[10px] font-semibold"
-          style={{ color: theme.text }}>
-          <span
-            className="grid size-14 place-items-center rounded-full text-white shadow-lift"
-            style={{ backgroundColor: '#10a05c' }}>
-            <WhatsAppIcon className="size-7" />
-          </span>
-          WhatsApp
-        </button>
         <NavLink
           to={`/${store.slug}/favoris`}
-          className="flex flex-col items-center gap-1 text-[10px] font-medium"
+          className="flex flex-col items-center gap-1 py-1 text-[10px] font-medium"
           style={({ isActive }) => ({ color: isActive ? theme.accent : theme.muted })}>
           <Heart className="size-5" />
           Favoris
         </NavLink>
         <NavLink
-          to={`/${store.slug}/contact`}
-          className="flex flex-col items-center gap-1 text-[10px] font-medium"
+          to={`/${store.slug}/panier`}
+          className="relative flex flex-col items-center gap-1 py-1 text-[10px] font-medium"
           style={({ isActive }) => ({ color: isActive ? theme.accent : theme.muted })}>
-          <PhoneCall className="size-5" />
-          Contact
+          <span className="relative">
+            <ShoppingBag className="size-5" />
+            {cartCount > 0 &&
+            <span
+              className="absolute -right-2 -top-1 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[8px] font-bold"
+              style={{ backgroundColor: theme.accent, color: theme.accentText }}>
+              {cartCount}
+            </span>
+            }
+          </span>
+          Panier
         </NavLink>
-      </div>
+        <NavLink
+          to={`/${store.slug}/compte`}
+          className="flex flex-col items-center gap-1 py-1 text-[10px] font-medium"
+          style={({ isActive }) => ({ color: isActive ? theme.accent : theme.muted })}>
+          <UserRound className="size-5" />
+          Compte
+        </NavLink>
+      </nav>
+      }
     </div>);
 
 }
