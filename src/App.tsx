@@ -29,6 +29,7 @@ import { StoreProductDetail } from './pages/store/StoreProductDetail';
 import { StoreCart } from './pages/store/StoreCart';
 import { StoreCheckout } from './pages/store/StoreCheckout';
 import { StoreContact } from './pages/store/StoreContact';
+import { StoreFavorites } from './pages/store/StoreFavorites';
 import { StorePremiumDemo } from './pages/store/StorePremiumDemo';
 import { StoreNotFound } from './pages/store/StoreNotFound';
 import { Unsubscribe } from './pages/store/Unsubscribe';
@@ -127,6 +128,7 @@ export function App({
             <Route path="produit/:productSlug" element={<StoreProductDetail />} />
             <Route path="panier" element={<StoreCart />} />
             <Route path="commande" element={<StoreCheckout />} />
+            <Route path="favoris" element={<StoreFavorites />} />
             <Route path="contact" element={<StoreContact />} />
             <Route path="*" element={<StoreNotFound />} />
           </Route>
