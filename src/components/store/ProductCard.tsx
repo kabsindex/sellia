@@ -221,14 +221,14 @@ export function ProductCard({ product, store, theme, layout = 'grid', onOrder }:
 
   return (
     <article
-      className="group relative flex flex-col overflow-hidden rounded-xl transition-transform duration-200 hover:-translate-y-0.5 md:rounded-2xl"
+      className="group relative flex flex-col overflow-hidden rounded-[20px] transition-transform duration-200 hover:-translate-y-0.5"
       style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}>
       
-      <Link to={href} className="relative block aspect-square overflow-hidden">
+      <Link to={href} className="relative block aspect-[1/1.05] overflow-hidden">
         <ProductImage
           src={product.images[0]}
           alt={product.name}
-          imageClassName="transition-transform duration-300 group-hover:scale-[1.03]" />
+          imageClassName="p-2 transition-transform duration-300 group-hover:scale-[1.03]" />
         
         {discount &&
         <span
@@ -257,7 +257,7 @@ export function ProductCard({ product, store, theme, layout = 'grid', onOrder }:
         <Heart className={`size-4 ${favorite ? 'fill-current' : ''}`} />
       </button>
 
-      <div className="flex flex-1 flex-col p-2.5 md:p-3">
+      <div className="flex flex-1 flex-col p-3">
         <Link to={href} className="line-clamp-2 text-[13px] font-medium leading-snug hover:underline">
           {product.name}
         </Link>
@@ -279,26 +279,18 @@ export function ProductCard({ product, store, theme, layout = 'grid', onOrder }:
           </p>
         }
 
-        <div className="mt-3 grid grid-cols-[40px_1fr] gap-1.5">
+        <div className="mt-auto flex items-end justify-between gap-2 pt-3">
+          <span className="text-[10px]" style={{ color: theme.muted }}>
+            {product.stock > 0 ? 'Disponible' : 'Indisponible'}
+          </span>
           <button
             type="button"
             onClick={() => setPickerOpen(true)}
             disabled={disabled}
-            className="grid h-9 place-items-center rounded-xl transition-opacity hover:opacity-90 disabled:opacity-45"
-            style={{ border: `1px solid ${theme.border}`, color: theme.text }}
+            className="grid size-9 shrink-0 place-items-center rounded-full transition-transform hover:scale-105 disabled:opacity-45"
+            style={{ backgroundColor: theme.accent, color: theme.accentText }}
             aria-label={`Ajouter ${product.name} au panier`}>
-            <ShoppingCart className="size-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => onOrder(product)}
-            disabled={disabled}
-            className="inline-flex h-9 min-w-0 items-center justify-center gap-1.5 rounded-xl px-2 text-xs font-semibold transition-opacity hover:opacity-90 disabled:opacity-45"
-            style={{ backgroundColor: theme.accent, color: theme.accentText }}>
-            
-            <WhatsAppIcon className="size-3.5 shrink-0" />
-            <span className="sm:hidden">Commander</span>
-            <span className="hidden sm:inline">{store.ctaLabel}</span>
+            <Plus className="size-4" />
           </button>
         </div>
       </div>
