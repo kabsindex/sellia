@@ -321,7 +321,7 @@ export function StoreProductDetail() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-2 sm:grid-cols-[1fr_1.4fr]">
+          <div className="sticky bottom-3 z-20 mt-6 grid gap-2 rounded-[20px] p-2 shadow-lift backdrop-blur sm:static sm:grid-cols-[1fr_1.4fr] sm:p-0 sm:shadow-none" style={{ backgroundColor: theme.headerBg }}>
             <button
               type="button"
               onClick={handleAddToCart}
