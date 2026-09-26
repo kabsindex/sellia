@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowLeft, Check, Minus, Plus, ShieldCheck, Truck } from 'lucide-react';
+import { ArrowLeft, Check, Heart, Minus, Plus, Share2, ShieldCheck, ShoppingBag, Truck } from 'lucide-react';
 import { ProductCard } from '../../components/store/ProductCard';
 import { CategoryIcon } from '../../components/shared/CategoryIcon';
 import { ProductImage } from '../../components/shared/ProductImage';
@@ -17,7 +17,7 @@ export function StoreProductDetail() {
   const { productSlug } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { store, products, categories, addToCart } = useSellia();
+  const { store, products, categories, addToCart, favorites, toggleFavorite } = useSellia();
   const storeTheme = useStoreTheme(store.theme);
   const isPremiumDemo = location.pathname.startsWith('/demo/premium/');
   const theme = isPremiumDemo ? getTheme('noir') : storeTheme;
@@ -29,6 +29,18 @@ export function StoreProductDetail() {
   const [size, setSize] = useState<string | undefined>(product?.sizes[0]);
   const [color, setColor] = useState<string | undefined>(product?.colors[0]?.name);
   const [quantity, setQuantity] = useState(1);
+  const favorite = product ? favorites.includes(product.id) : false;
+
+  function shareProduct() {
+    if (!product) return;
+    const url = window.location.href;
+    if (navigator.share) {
+      void navigator.share({ title: product.name, text: product.name, url }).catch(() => undefined);
+      return;
+    }
+    void navigator.clipboard?.writeText(url);
+    toast.success('Lien du produit copié.');
+  }
 
   if (!product) {
     return (
@@ -103,27 +115,49 @@ export function StoreProductDetail() {
 
   return (
     <div className="mx-auto min-h-screen w-full max-w-[1100px] px-4 py-4" style={isPremiumDemo ? { backgroundColor: theme.surface, color: theme.text } : undefined}>
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-1.5 text-sm"
-        style={{ color: theme.muted }}>
-        
-        <ArrowLeft className="size-4" />
-        Retour
-      </button>
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="grid size-10 place-items-center rounded-full"
+          style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}`, color: theme.text }}
+          aria-label="Retour">
+          <ArrowLeft className="size-4" />
+        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              const added = toggleFavorite(product.id);
+              toast.success(added ? 'Ajouté aux favoris.' : 'Retiré des favoris.');
+            }}
+            className="grid size-10 place-items-center rounded-full"
+            style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}`, color: favorite ? theme.accent : theme.text }}
+            aria-label={favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}>
+            <Heart className={`size-4 ${favorite ? 'fill-current' : ''}`} />
+          </button>
+          <button
+            type="button"
+            onClick={shareProduct}
+            className="grid size-10 place-items-center rounded-full"
+            style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}`, color: theme.text }}
+            aria-label="Partager">
+            <Share2 className="size-4" />
+          </button>
+        </div>
+      </div>
 
       <div className="mt-3 grid gap-6 lg:grid-cols-2">
         <div>
           <div
-            className="relative overflow-hidden rounded-2xl"
+            className="relative overflow-hidden rounded-[24px]"
             style={{ border: `1px solid ${theme.border}` }}>
             
             <div className="aspect-square">
               <ProductImage
                 src={product.images[imageIndex]}
                 alt={product.name}
-                imageClassName="p-4" />
+                imageClassName="p-6" />
               
             </div>
             {discount &&
@@ -181,6 +215,24 @@ export function StoreProductDetail() {
           <p className="mt-3 text-sm leading-relaxed" style={{ color: theme.muted }}>
             {product.description}
           </p>
+
+          <div
+            className="mt-4 flex items-center gap-3 rounded-2xl p-3"
+            style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}>
+            {store.logo ?
+            <img src={store.logo} alt="" className="size-11 rounded-xl object-contain" /> :
+            <span className="grid size-11 place-items-center rounded-xl text-sm font-bold" style={{ backgroundColor: theme.accentSoft, color: theme.accent }}>
+              {store.name.slice(0, 1).toUpperCase()}
+            </span>
+            }
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] uppercase tracking-[0.12em]" style={{ color: theme.muted }}>Vendu par</p>
+              <p className="truncate text-sm font-semibold">{store.name}</p>
+            </div>
+            {store.plan === 'premium' && store.verificationStatus === 'verified' &&
+            <ShieldCheck className="size-4 shrink-0" style={{ color: theme.accent }} />
+            }
+          </div>
 
           <p className="mt-4 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium"
           style={{
@@ -269,23 +321,22 @@ export function StoreProductDetail() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-2 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={handleWhatsAppOrder}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl text-sm font-semibold"
-              style={{ backgroundColor: theme.accent, color: theme.accentText }}>
-              
-              <WhatsAppIcon className="size-4" />
-              {store.ctaLabel}
-            </button>
+          <div className="sticky bottom-3 z-20 mt-6 grid gap-2 rounded-[20px] p-2 shadow-lift backdrop-blur sm:static sm:grid-cols-[1fr_1.4fr] sm:p-0 sm:shadow-none" style={{ backgroundColor: theme.headerBg }}>
             <button
               type="button"
               onClick={handleAddToCart}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl text-sm font-semibold"
-              style={{ border: `1px solid ${theme.border}`, color: theme.text }}>
-              
-              Ajouter au panier
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl text-sm font-semibold"
+              style={{ border: `1px solid ${theme.border}`, color: theme.text, backgroundColor: theme.card }}>
+              <ShoppingBag className="size-4" />
+              Ajouter
+            </button>
+            <button
+              type="button"
+              onClick={handleWhatsAppOrder}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl text-sm font-semibold"
+              style={{ backgroundColor: theme.accent, color: theme.accentText }}>
+              <WhatsAppIcon className="size-4" />
+              Commander sur WhatsApp
             </button>
           </div>
 

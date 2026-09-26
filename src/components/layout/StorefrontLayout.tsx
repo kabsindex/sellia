@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate, useParams } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   Grid2X2,
   Heart,
   Home,
   MapPin,
-  PhoneCall,
   Search,
   SearchX,
   ShieldCheck,
   ShoppingBag,
-  WifiOff,
-  X } from
+  UserRound,
+  WifiOff } from
 'lucide-react';
 import { SiFacebook, SiInstagram, SiTiktok } from 'react-icons/si';
 import { Button } from '../ui/Button';
@@ -21,10 +20,11 @@ import { ProductImage } from '../shared/ProductImage';
 import { WhatsAppIcon } from '../shared/WhatsAppIcon';
 import { useSellia } from '../../contexts/SelliaContext';
 import { useStoreTheme } from '../../hooks/useStoreTheme';
-import { openWhatsApp, storeUrl } from '../../utils/whatsapp';
+import { storeUrl } from '../../utils/whatsapp';
 
 export function StorefrontLayout() {
   const { slug } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const {
     store,
@@ -35,12 +35,15 @@ export function StorefrontLayout() {
     bootstrapSlug
   } = useSellia();
   const theme = useStoreTheme(store.theme);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const [minimumLoadingDone, setMinimumLoadingDone] = useState(false);
 
   const cartCount = cart.reduce((sum, line) => sum + line.quantity, 0);
+  const storefrontBase = `/${store.slug}`;
+  const showMobileNav =
+    !location.pathname.startsWith(`${storefrontBase}/produit/`) &&
+    location.pathname !== `${storefrontBase}/panier`;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -141,132 +144,115 @@ export function StorefrontLayout() {
       <header
         className={`sticky top-0 z-40 backdrop-blur transition-shadow duration-200 ${scrolled ? 'shadow-soft' : ''}`}
         style={{ backgroundColor: theme.headerBg, borderBottom: `1px solid ${theme.border}` }}>
-        
-        <div className="mx-auto flex h-16 w-full max-w-[1280px] items-center gap-3 px-4 lg:px-6">
-          <Link to={`/${store.slug}`} className="flex min-w-0 flex-1 items-center gap-2 md:flex-none">
-            {store.logo &&
-            <img src={store.logo} alt="" className="size-8 shrink-0 rounded-lg object-contain" />
-            }
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-semibold leading-tight">{store.name}</span>
-              {store.plan === 'premium' && store.verificationStatus === 'verified' &&
-              <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-semibold" style={{ color: theme.accent }}>
-                  <ShieldCheck className="size-3" />
-                  SELLIA Verified
-                </span>
-              }
-              <span className="block truncate text-[10px]" style={{ color: theme.muted }}>
-                {store.category}
-              </span>
-            </span>
+
+        <div className="mx-auto flex h-14 w-full max-w-[1280px] items-center gap-3 px-4 lg:px-6">
+          <Link to="/" className="shrink-0" aria-label="Accueil SELLIA">
+            <Logo />
           </Link>
 
-          <nav className="ml-6 hidden items-center gap-1 md:flex">
+          <nav className="ml-3 hidden items-center gap-1 md:flex">
             {navLinks.map((link) =>
             <NavLink
               key={link.to}
               to={link.to}
               end={link.end}
-              className="border-b-2 px-3 py-2 text-sm transition-colors"
+              className="rounded-lg px-3 py-2 text-sm transition-colors"
               style={({ isActive }) => ({
-                color: isActive ? theme.text : theme.muted,
-                fontWeight: isActive ? 600 : 400,
-                borderColor: isActive ? theme.accent : 'transparent'
+                color: isActive ? theme.accent : theme.muted,
+                fontWeight: isActive ? 600 : 500,
+                backgroundColor: isActive ? theme.accentSoft : 'transparent'
               })}>
-              
-                {link.label}
-              </NavLink>
+              {link.label}
+            </NavLink>
             )}
           </nav>
 
-          <div className="ml-auto hidden w-full max-w-[280px] items-center md:flex">
-            <div
-              className="flex h-10 w-full items-center gap-2 rounded-xl px-3"
-              style={{ border: `1px solid ${theme.border}`, backgroundColor: theme.card }}>
-              <Search className="size-4 shrink-0" style={{ color: theme.muted }} />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Rechercher un produit..."
-                aria-label="Rechercher un produit"
-                className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-                style={{ color: theme.text }} />
-            </div>
-          </div>
-
-          <div className="ml-auto flex shrink-0 items-center gap-1 md:ml-0 md:gap-2">
-            <button
-              type="button"
-              onClick={() => setSearchOpen((value) => !value)}
-              aria-label="Rechercher un produit"
-              className="grid size-9 place-items-center rounded-lg md:hidden"
-              style={{ color: theme.muted }}>
-              
-              {searchOpen ? <X className="size-4" /> : <Search className="size-4" />}
-            </button>
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <Link
+              to={`/${store.slug}/favoris`}
+              aria-label="Favoris"
+              className="hidden size-9 place-items-center rounded-full sm:grid"
+              style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}`, color: theme.muted }}>
+              <Heart className="size-4" />
+            </Link>
             <Link
               to={`/${store.slug}/panier`}
               aria-label={`Panier (${cartCount})`}
-              className="relative grid size-9 place-items-center rounded-lg"
-              style={{ color: theme.muted }}>
-              
-              <ShoppingBag className="size-4" />
+              className="relative grid size-10 place-items-center rounded-full"
+              style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}`, color: theme.text }}>
+              <ShoppingBag className="size-4.5" />
               {cartCount > 0 &&
               <span
-                className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-bold"
+                className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-bold"
                 style={{ backgroundColor: theme.accent, color: theme.accentText }}>
-                
-                  {cartCount}
-                </span>
+                {cartCount}
+              </span>
               }
             </Link>
           </div>
         </div>
 
-        {(searchOpen || query) &&
-        <div className="mx-auto w-full max-w-[1100px] px-4 pb-3">
-            {searchOpen &&
-            <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Rechercher un produit…"
-            aria-label="Rechercher un produit"
-            autoFocus
-            className="h-10 w-full rounded-xl px-3 text-sm outline-none"
-            style={{
-              backgroundColor: theme.surface === '#ffffff' ? '#f6f7f7' : theme.card,
-              border: `1px solid ${theme.border}`,
-              color: theme.text
-            }} />
+        <div className="mx-auto flex w-full max-w-[1280px] items-center gap-2 px-4 pb-3 lg:px-6">
+          <Link
+            to={`/${store.slug}`}
+            className="flex max-w-[44%] shrink-0 items-center gap-2 rounded-full px-2.5 py-1.5 sm:max-w-none"
+            style={{ backgroundColor: theme.accentSoft }}>
+            {store.logo &&
+            <img src={store.logo} alt="" className="size-7 shrink-0 rounded-full object-contain" />
             }
-          
-            {results.length > 0 &&
-          <ul className="mt-2 overflow-hidden rounded-xl" style={{ border: `1px solid ${theme.border}` }}>
-                {results.slice(0, 5).map((product) =>
-            <li key={product.id}>
-                    <Link
-                to={`/${store.slug}/produit/${product.slug}`}
-                onClick={() => {
-                  setSearchOpen(false);
-                  setQuery('');
-                }}
-                className="flex items-center gap-2.5 px-3 py-2"
-                style={{ backgroundColor: theme.card }}>
-                
-                      <span className="size-8 shrink-0 overflow-hidden rounded-md">
-                        <ProductImage src={product.images[0]} alt="" imageClassName="p-0.5" />
-                      </span>
-                      <span className="truncate text-sm">{product.name}</span>
-                    </Link>
-                  </li>
-            )}
-              </ul>
-          }
+            <span className="min-w-0">
+              <span className="block truncate text-xs font-semibold">{store.name}</span>
+              {store.plan === 'premium' && store.verificationStatus === 'verified' &&
+              <span className="inline-flex items-center gap-1 text-[9px] font-semibold" style={{ color: theme.accent }}>
+                <ShieldCheck className="size-2.5" />
+                Vérifiée
+              </span>
+              }
+            </span>
+          </Link>
+
+          <div
+            className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-full px-3"
+            style={{ border: `1px solid ${theme.border}`, backgroundColor: theme.card }}>
+            <Search className="size-4 shrink-0" style={{ color: theme.muted }} />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Rechercher un produit"
+              aria-label="Rechercher un produit"
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+              style={{ color: theme.text }} />
           </div>
+        </div>
+
+        {query &&
+        <div className="mx-auto w-full max-w-[1280px] px-4 pb-3 lg:px-6">
+          {results.length > 0 ?
+          <ul className="overflow-hidden rounded-2xl shadow-lift" style={{ border: `1px solid ${theme.border}` }}>
+            {results.slice(0, 5).map((product) =>
+            <li key={product.id}>
+              <Link
+                to={`/${store.slug}/produit/${product.slug}`}
+                onClick={() => setQuery('')}
+                className="flex items-center gap-3 px-3 py-2.5"
+                style={{ backgroundColor: theme.card }}>
+                <span className="size-10 shrink-0 overflow-hidden rounded-xl">
+                  <ProductImage src={product.images[0]} alt="" imageClassName="p-1" />
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm font-medium">{product.name}</span>
+              </Link>
+            </li>
+            )}
+          </ul> :
+          <div className="rounded-2xl px-4 py-3 text-sm" style={{ backgroundColor: theme.card, color: theme.muted, border: `1px solid ${theme.border}` }}>
+            Aucun produit trouvé
+          </div>
+          }
+        </div>
         }
       </header>
 
-      <main className="flex-1 pb-28 md:pb-0">
+      <main className={`flex-1 ${showMobileNav ? 'pb-24' : 'pb-5'} md:pb-0`}>
         <Outlet />
       </main>
 
@@ -340,57 +326,58 @@ export function StorefrontLayout() {
         </div>
       </footer>
 
-      {/* Navigation mobile SELLIA BASIC */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 items-end gap-1 px-3 pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-18px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
+      {showMobileNav &&
+      <nav
+        aria-label="Navigation boutique"
+        className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 items-end gap-1 px-2 pt-2 pb-[max(0.55rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-18px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
         style={{ backgroundColor: theme.headerBg, borderTop: `1px solid ${theme.border}` }}>
         <NavLink
           to={`/${store.slug}`}
           end
-          className="flex flex-col items-center gap-1 text-[10px] font-medium"
+          className="flex flex-col items-center gap-1 py-1 text-[10px] font-medium"
           style={({ isActive }) => ({ color: isActive ? theme.accent : theme.muted })}>
           <Home className="size-5" />
           Accueil
         </NavLink>
         <NavLink
           to={`/${store.slug}/catalogue`}
-          className="flex flex-col items-center gap-1 text-[10px] font-medium"
+          className="flex flex-col items-center gap-1 py-1 text-[10px] font-medium"
           style={({ isActive }) => ({ color: isActive ? theme.accent : theme.muted })}>
           <Grid2X2 className="size-5" />
           Catégories
         </NavLink>
-        <button
-          type="button"
-          onClick={() =>
-          openWhatsApp(
-            store.whatsapp,
-            `Bonjour 👋 J'ai une question sur ${store.name} (${storeUrl(store)}).`
-          )
-          }
-          className="-mt-6 flex flex-col items-center gap-1 text-[10px] font-semibold"
-          style={{ color: theme.text }}>
-          <span
-            className="grid size-14 place-items-center rounded-full text-white shadow-lift"
-            style={{ backgroundColor: '#10a05c' }}>
-            <WhatsAppIcon className="size-7" />
-          </span>
-          WhatsApp
-        </button>
         <NavLink
           to={`/${store.slug}/favoris`}
-          className="flex flex-col items-center gap-1 text-[10px] font-medium"
+          className="flex flex-col items-center gap-1 py-1 text-[10px] font-medium"
           style={({ isActive }) => ({ color: isActive ? theme.accent : theme.muted })}>
           <Heart className="size-5" />
           Favoris
         </NavLink>
         <NavLink
-          to={`/${store.slug}/contact`}
-          className="flex flex-col items-center gap-1 text-[10px] font-medium"
+          to={`/${store.slug}/panier`}
+          className="relative flex flex-col items-center gap-1 py-1 text-[10px] font-medium"
           style={({ isActive }) => ({ color: isActive ? theme.accent : theme.muted })}>
-          <PhoneCall className="size-5" />
-          Contact
+          <span className="relative">
+            <ShoppingBag className="size-5" />
+            {cartCount > 0 &&
+            <span
+              className="absolute -right-2 -top-1 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[8px] font-bold"
+              style={{ backgroundColor: theme.accent, color: theme.accentText }}>
+              {cartCount}
+            </span>
+            }
+          </span>
+          Panier
         </NavLink>
-      </div>
+        <NavLink
+          to={`/${store.slug}/compte`}
+          className="flex flex-col items-center gap-1 py-1 text-[10px] font-medium"
+          style={({ isActive }) => ({ color: isActive ? theme.accent : theme.muted })}>
+          <UserRound className="size-5" />
+          Compte
+        </NavLink>
+      </nav>
+      }
     </div>);
 
 }
