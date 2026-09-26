@@ -29,6 +29,7 @@ import { StoreProductDetail } from './pages/store/StoreProductDetail';
 import { StoreCart } from './pages/store/StoreCart';
 import { StoreContact } from './pages/store/StoreContact';
 import { StoreFavorites } from './pages/store/StoreFavorites';
+import { StoreAccount } from './pages/store/StoreAccount';
 import { StorePremiumDemo } from './pages/store/StorePremiumDemo';
 import { StoreNotFound } from './pages/store/StoreNotFound';
 import { Unsubscribe } from './pages/store/Unsubscribe';
@@ -128,6 +129,7 @@ export function App({
             <Route path="panier" element={<StoreCart />} />
             <Route path="commande" element={<Navigate to="../panier" replace />} />
             <Route path="favoris" element={<StoreFavorites />} />
+            <Route path="compte" element={<StoreAccount />} />
             <Route path="contact" element={<StoreContact />} />
             <Route path="*" element={<StoreNotFound />} />
           </Route>
