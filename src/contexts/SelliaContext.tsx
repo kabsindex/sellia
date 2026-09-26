@@ -147,6 +147,21 @@ function visitorKey(): string {
   return created;
 }
 
+function cartStorageKey(slug: string): string {
+  return `sellia:cart:${slug || 'default'}`;
+}
+
+function readStoredCart(slug: string): CartLine[] {
+  try {
+    const raw = window.localStorage.getItem(cartStorageKey(slug));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 function reportPersistenceError(error: unknown) {
   const message = error instanceof Error ? error.message : 'La sauvegarde a échoué.';
   toast.error(message);
@@ -168,7 +183,7 @@ export function SelliaProvider({ children, initialStore }: ProviderProps) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [analytics, setAnalytics] = useState<StoreAnalytics>({ visitors7d: 0, visitors30d: 0, daily: [] });
-  const [cart, setCart] = useState<CartLine[]>([]);
+  const [cart, setCart] = useState<CartLine[]>(() => readStoredCart(routeTarget.slug));
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
       const raw = window.localStorage.getItem('sellia:favorites');
@@ -195,6 +210,14 @@ export function SelliaProvider({ children, initialStore }: ProviderProps) {
     setOnboardingComplete(payload.onboardingComplete);
     if ('user' in payload) setUser(payload.user ?? null);
   }, []);
+
+  useEffect(() => {
+    setCart(readStoredCart(routeTarget.slug));
+  }, [routeTarget.slug]);
+
+  useEffect(() => {
+    window.localStorage.setItem(cartStorageKey(routeTarget.slug), JSON.stringify(cart));
+  }, [cart, routeTarget.slug]);
 
   useEffect(() => {
     const target = routeTarget;

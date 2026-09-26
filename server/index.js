@@ -1006,17 +1006,118 @@ app.post('/api/stores/:slug/orders', async (req, res, next) => {
   const connection = await pool.getConnection();
   try {
     const store = await findStore(req.params.slug);
-    if (!store || !Array.isArray(req.body.items) || !req.body.items.length) return fail(res, 400, 'Commande invalide.');
-    const reference = clean(req.body.reference, 32) || `SL-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
-    const total = req.body.items.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
-    await connection.beginTransaction();
-    const [result] = await connection.query('INSERT INTO orders (store_id, reference, customer_name, customer_phone, customer_address, city, note, total, status, channel) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [store.id, reference, clean(req.body.customerName, 120), clean(req.body.phone, 40), clean(req.body.address, 255), clean(req.body.city, 120), clean(req.body.note, 2000), total, 'nouvelle', req.body.channel === 'catalogue' ? 'catalogue' : 'whatsapp']);
-    for (const item of req.body.items) {
-      await connection.query('INSERT INTO order_items (order_id, product_id, name, price, quantity, size, color, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [result.insertId, Number(item.productId) || null, clean(item.name, 180), Number(item.price), Number(item.quantity), clean(item.size, 50) || null, clean(item.color, 80) || null, databaseImagePath(item.image) || null]);
+    if (!store || !Array.isArray(req.body.items) || !req.body.items.length) {
+      return fail(res, 400, 'Commande invalide.');
     }
+
+    const requestedItems = req.body.items.map((item) => ({
+      productId: Number(item.productId),
+      quantity: Number(item.quantity),
+      size: clean(item.size, 50) || null,
+      color: clean(item.color, 80) || null
+    }));
+
+    if (requestedItems.some((item) =>
+      !Number.isInteger(item.productId) || item.productId <= 0 ||
+      !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 99
+    )) {
+      return fail(res, 400, 'Un produit ou une quantité est invalide.');
+    }
+
+    const productIds = [...new Set(requestedItems.map((item) => item.productId))];
+    const [catalogProducts] = await connection.query(
+      `SELECT
+        product.id,
+        product.name,
+        product.price,
+        product.stock,
+        product.available,
+        product.hidden,
+        (
+          SELECT image.src
+          FROM product_images AS image
+          WHERE image.product_id = product.id
+          ORDER BY image.sort_order, image.id
+          LIMIT 1
+        ) AS image
+      FROM products AS product
+      WHERE product.store_id = ? AND product.id IN (?)`,
+      [store.id, productIds]
+    );
+
+    if (catalogProducts.length !== productIds.length) {
+      return fail(res, 400, 'Un ou plusieurs produits ne sont plus disponibles.');
+    }
+
+    const catalogById = new Map(catalogProducts.map((product) => [Number(product.id), product]));
+    for (const item of requestedItems) {
+      const product = catalogById.get(item.productId);
+      if (!product || product.hidden || !product.available || Number(product.stock) <= 0) {
+        return fail(res, 409, 'Un ou plusieurs produits ne sont plus disponibles.');
+      }
+      if (item.quantity > Number(product.stock)) {
+        return fail(res, 409, `Stock insuffisant pour ${product.name}.`);
+      }
+    }
+
+    const orderItems = requestedItems.map((item) => {
+      const product = catalogById.get(item.productId);
+      return {
+        productId: Number(product.id),
+        name: product.name,
+        price: Number(product.price),
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+        image: databaseImagePath(product.image) || null
+      };
+    });
+
+    const reference = clean(req.body.reference, 32) ||
+      `SL-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+    const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    await connection.beginTransaction();
+    const [result] = await connection.query(
+      'INSERT INTO orders (store_id, reference, customer_name, customer_phone, customer_address, city, note, total, status, channel) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        store.id,
+        reference,
+        clean(req.body.customerName, 120),
+        clean(req.body.phone, 40),
+        clean(req.body.address, 255),
+        clean(req.body.city, 120),
+        clean(req.body.note, 2000),
+        total,
+        'nouvelle',
+        req.body.channel === 'catalogue' ? 'catalogue' : 'whatsapp'
+      ]
+    );
+
+    for (const item of orderItems) {
+      await connection.query(
+        'INSERT INTO order_items (order_id, product_id, name, price, quantity, size, color, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          result.insertId,
+          item.productId,
+          item.name,
+          item.price,
+          item.quantity,
+          item.size,
+          item.color,
+          item.image
+        ]
+      );
+    }
+
     await connection.commit();
     res.status(201).json({ id: String(result.insertId), reference, total });
-  } catch (error) { await connection.rollback(); next(error); } finally { connection.release(); }
+  } catch (error) {
+    await connection.rollback();
+    next(error);
+  } finally {
+    connection.release();
+  }
 });
 
 app.use('/api', (_req, res) => fail(res, 404, 'Route API introuvable.'));
