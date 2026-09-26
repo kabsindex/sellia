@@ -376,13 +376,13 @@ export function StorefrontLayout() {
           </span>
           WhatsApp
         </button>
-        <button
-          type="button"
+        <NavLink
+          to={`/${store.slug}/favoris`}
           className="flex flex-col items-center gap-1 text-[10px] font-medium"
-          style={{ color: theme.muted }}>
+          style={({ isActive }) => ({ color: isActive ? theme.accent : theme.muted })}>
           <Heart className="size-5" />
           Favoris
-        </button>
+        </NavLink>
         <NavLink
           to={`/${store.slug}/contact`}
           className="flex flex-col items-center gap-1 text-[10px] font-medium"
