@@ -65,7 +65,7 @@ export const PLAN_FEATURES: Record<PlanId, PlanFeatureFlags> = {
     reviews: false,
     advancedAnalytics: false,
     removeBranding: false,
-    verification: true,
+    verification: false,
     promotions: false,
     promoCodes: false
   },
@@ -96,7 +96,6 @@ export const plans: Plan[] = [
       'Panier',
       'Catégories',
       'Personnalisation de base',
-      'Vérification SELLIA',
       'Statistiques essentielles'
     ],
     cta: 'Commencer gratuitement',
@@ -142,7 +141,7 @@ export const comparisonRows = [
   ['Boutique', '✓', '✓'],
   ['WhatsApp', '✓', '✓'],
   ['Panier', '✓', '✓'],
-  ['Vérification SELLIA', '✓', '✓'],
+  ['Vérification SELLIA', '—', '✓'],
   ['Thème Basic', '✓', '✓'],
   ['Thèmes Premium', '—', '✓'],
   ['Personnalisation avancée', '—', '✓'],
