@@ -16,8 +16,9 @@ export function StoreFavorites() {
     .slice(0, productLimit);
 
   return (
-    <div className="mx-auto w-full max-w-[1100px] px-4 py-6">
-      <h1 className="font-heading text-[22px] font-semibold tracking-[-0.02em]">Favoris</h1>
+    <div className="mx-auto w-full max-w-[1100px] px-4 py-5">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: theme.muted }}>{store.name}</p>
+      <h1 className="mt-1 font-heading text-[24px] font-semibold tracking-[-0.03em]">Mes favoris</h1>
       <p className="mt-1 text-sm" style={{ color: theme.muted }}>
         {visible.length} produit{visible.length > 1 ? 's' : ''} enregistré{visible.length > 1 ? 's' : ''}
       </p>
