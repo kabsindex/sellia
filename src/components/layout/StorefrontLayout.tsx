@@ -20,7 +20,7 @@ import { ProductImage } from '../shared/ProductImage';
 import { WhatsAppIcon } from '../shared/WhatsAppIcon';
 import { useSellia } from '../../contexts/SelliaContext';
 import { useStoreTheme } from '../../hooks/useStoreTheme';
-import { openWhatsApp, storeUrl } from '../../utils/whatsapp';
+import { storeUrl } from '../../utils/whatsapp';
 
 export function StorefrontLayout() {
   const { slug } = useParams();
