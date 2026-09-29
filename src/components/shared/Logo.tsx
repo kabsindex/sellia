@@ -22,14 +22,17 @@ export function Logo({ className, inverted = false, showWordmark = true }: LogoP
       <img
         src={showWordmark ? '/sellia-logo-cropped.png' : '/sellia-logo.png'}
         alt="SELLIA"
-        className={cn(imageClassName, inverted && !showWordmark && 'brightness-0 invert')} />
+        className={imageClassName} />
       {inverted && showWordmark &&
       <img
         src="/sellia-logo-cropped.png"
         alt=""
         aria-hidden="true"
-        className={cn('absolute inset-0 brightness-0 invert', imageClassName)}
-        style={{ clipPath: 'inset(63% 0 0 0)' }} />
+        className={cn('pointer-events-none absolute inset-0 brightness-0 invert', imageClassName)}
+        style={{ clipPath: 'inset(58% 0 0 0)' }} />
+      }
+      {inverted && !showWordmark &&
+      <span className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-white/15" />
       }
       </span>
     </span>);
