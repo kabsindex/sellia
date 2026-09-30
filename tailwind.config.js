@@ -55,7 +55,7 @@ export default {content: [
       },
       fontFamily: {
         sans: ['Geist', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        heading: ['Geist'],
+        heading: ['Geist', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         mono: ['"Geist Mono"', 'ui-monospace', 'monospace']
       },
       boxShadow: {
