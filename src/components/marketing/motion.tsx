@@ -1,21 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { animate, motion, useInView, useReducedMotion } from 'framer-motion';
+import { animate, motion, useReducedMotion } from 'framer-motion';
 
 export const easeOut = [0.22, 1, 0.36, 1] as const;
 
-function useDesktopViewport() {
-  const [isDesktop, setIsDesktop] = useState(false);
+function usePageVisibility() {
+  const [isVisible, setIsVisible] = useState(() => document.visibilityState !== 'hidden');
 
   useEffect(() => {
-    const media = window.matchMedia('(min-width: 1024px)');
-    const update = () => setIsDesktop(media.matches);
+    const update = () => setIsVisible(document.visibilityState !== 'hidden');
 
-    update();
-    media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
+    document.addEventListener('visibilitychange', update);
+    return () => document.removeEventListener('visibilitychange', update);
   }, []);
 
-  return isDesktop;
+  return isVisible;
 }
 
 /** Apparition discrète au scroll (une seule fois). Désactivée si l'utilisateur réduit les animations. */
@@ -65,25 +63,22 @@ export function AnimatedNumber({
 }
 
 /**
- * Scénario en boucle : renvoie l'étape courante. La boucle ne tourne que lorsque
- * l'élément est visible ; avec « réduire les animations », l'état final reste affiché.
+ * Scénario en boucle : renvoie l'étape courante. Les démonstrations restent actives
+ * quelle que soit la taille du viewport et sont suspendues lorsque l'onglet est masqué.
  */
 export function useScript(durations: number[]) {
-  const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { margin: '120px 0px', amount: 0.01 });
-  const isDesktop = useDesktopViewport();
-  const [step, setStep] = useState(reduce ? durations.length - 1 : 0);
-  const shouldPlay = inView || isDesktop;
+  const pageVisible = usePageVisibility();
+  const [step, setStep] = useState(0);
 
   useEffect(() => {
-    if (reduce || !shouldPlay) return;
+    if (!pageVisible) return;
     const timer = window.setTimeout(
       () => setStep((current) => (current + 1) % durations.length),
       durations[step]
     );
     return () => window.clearTimeout(timer);
-  }, [step, shouldPlay, reduce, durations]);
+  }, [step, pageVisible, durations]);
 
-  return { ref, step, setStep, reduce: Boolean(reduce) };
+  return { ref, step, setStep, reduce: false };
 }
