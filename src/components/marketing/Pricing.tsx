@@ -4,32 +4,33 @@ import { Check } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { cn } from '../../utils/cn';
 import { Badge } from '../ui/Badge';
+import { Reveal } from './motion';
 import { comparisonRows, plans } from '../../data/plans';
 
 export function Pricing() {
   const navigate = useNavigate();
 
   return (
-    <section id="tarifs" className="border-b border-border bg-background py-16 lg:py-24">
+    <section id="tarifs" className="scroll-mt-16 border-b border-border bg-background py-16 lg:py-24">
       <div className="mx-auto w-full max-w-[1160px] px-5">
-        <div className="max-w-[620px]">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand">Tarifs</p>
-          <h2 className="mt-3 font-heading text-[28px] font-semibold leading-tight tracking-[-0.02em] sm:text-[36px]">
+        <Reveal className="max-w-[620px]">
+          <p className="text-sm font-medium text-brand-strong">Tarifs</p>
+          <h2 className="mt-3 font-heading text-[28px] font-semibold leading-tight tracking-[-0.025em] sm:text-[38px]">
             Commence gratuitement. Passe au niveau suivant quand tu vends plus.
           </h2>
           <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
             Aucune commission sur tes ventes, quel que soit ton plan.
           </p>
-        </div>
+        </Reveal>
 
         <div className="mt-10 grid gap-4 lg:grid-cols-2">
-          {plans.map((plan) => {
+          {plans.map((plan, planIndex) => {
             const featured = Boolean(plan.highlight);
             return (
+              <Reveal key={plan.id} delay={planIndex * 0.1} className="h-full">
               <div
-                key={plan.id}
                 className={cn(
-                  'relative flex flex-col rounded-2xl border p-6 transition-shadow',
+                  'relative flex h-full flex-col rounded-2xl border p-6 transition-all duration-200 hover:-translate-y-0.5',
                   featured ?
                   'border-brand bg-card shadow-lift' :
                   'border-border bg-card shadow-soft'
@@ -67,13 +68,13 @@ export function Pricing() {
                   className="mt-3 text-center text-sm font-semibold text-brand hover:underline">
                   {plan.id === 'basic' ? 'Voir la boutique Basic' : 'Voir la boutique Premium'}
                 </button>
-              </div>);
-
+              </div>
+              </Reveal>);
           })}
         </div>
 
         <div className="mt-8 overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
-          <div className="grid grid-cols-[1.5fr_1fr_1fr] border-b border-border bg-secondary px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          <div className="grid grid-cols-[1.5fr_1fr_1fr] border-b border-border bg-secondary px-4 py-3 text-xs font-semibold text-muted-foreground">
             <span>Comparaison</span>
             <span className="text-center">Basic</span>
             <span className="text-center">Premium</span>
