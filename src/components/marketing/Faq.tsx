@@ -11,7 +11,7 @@ export function Faq() {
     <section id="faq" className="border-b border-border bg-background py-16 lg:py-24">
       <div className="mx-auto grid w-full max-w-[1160px] gap-10 px-5 lg:grid-cols-[0.8fr_1.2fr]">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand">FAQ</p>
+          <p className="text-sm font-medium text-brand-strong">FAQ</p>
           <h2 className="mt-3 font-heading text-[28px] font-semibold leading-tight tracking-[-0.02em] sm:text-[34px]">
             Les questions qu’on nous pose le plus.
           </h2>
