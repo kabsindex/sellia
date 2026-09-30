@@ -9,7 +9,7 @@ export function Testimonials() {
     <section className="border-b border-border bg-secondary/40 py-16 lg:py-24">
       <div className="mx-auto w-full max-w-[1160px] px-5">
         <div className="max-w-[620px]">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand">
+          <p className="text-sm font-medium text-brand-strong">
             Ils vendent déjà avec SELLIA
           </p>
           <h2 className="mt-3 font-heading text-[28px] font-semibold leading-tight tracking-[-0.02em] sm:text-[36px]">
@@ -17,7 +17,7 @@ export function Testimonials() {
           </h2>
         </div>
 
-        <div className="mt-10 grid gap-4 lg:grid-cols-3">
+        <div className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-3">
           {testimonials.map((item) =>
           <figure
             key={item.name}
