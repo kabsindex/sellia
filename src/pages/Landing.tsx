@@ -24,8 +24,8 @@ const placeholder = (height: string) => <div className={height} aria-hidden="tru
 
 export function Landing() {
   return (
-    // « user » : les animations de transformation sont coupées si l'utilisateur réduit les animations.
-    <MotionConfig reducedMotion="user">
+    // Les démos produit reposent sur le mouvement pour expliquer le parcours complet.
+    <MotionConfig reducedMotion="never">
       <div className="min-h-screen w-full bg-background">
         <MarketingNav />
         <main>

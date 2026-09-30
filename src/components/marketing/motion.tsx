@@ -16,6 +16,37 @@ function usePageVisibility() {
   return isVisible;
 }
 
+function useNearViewport(ref: React.RefObject<HTMLDivElement>) {
+  const [isNearViewport, setIsNearViewport] = useState(true);
+
+  useEffect(() => {
+    let frame = 0;
+
+    const update = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        const element = ref.current;
+        if (!element) return;
+
+        const rect = element.getBoundingClientRect();
+        const margin = Math.min(window.innerHeight * 0.5, 400);
+        setIsNearViewport(rect.bottom >= -margin && rect.top <= window.innerHeight + margin);
+      });
+    };
+
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [ref]);
+
+  return isNearViewport;
+}
+
 /** Apparition discrète au scroll (une seule fois). Désactivée si l'utilisateur réduit les animations. */
 export function Reveal({
   children,
@@ -69,16 +100,17 @@ export function AnimatedNumber({
 export function useScript(durations: number[]) {
   const ref = useRef<HTMLDivElement>(null);
   const pageVisible = usePageVisibility();
+  const isNearViewport = useNearViewport(ref);
   const [step, setStep] = useState(0);
 
   useEffect(() => {
-    if (!pageVisible) return;
+    if (!pageVisible || !isNearViewport) return;
     const timer = window.setTimeout(
       () => setStep((current) => (current + 1) % durations.length),
       durations[step]
     );
     return () => window.clearTimeout(timer);
-  }, [step, pageVisible, durations]);
+  }, [step, pageVisible, isNearViewport, durations]);
 
   return { ref, step, setStep, reduce: false };
 }
