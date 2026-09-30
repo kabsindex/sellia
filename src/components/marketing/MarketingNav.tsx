@@ -1,82 +1,54 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronDown, Menu, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Menu, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Logo } from '../shared/Logo';
 
 const links = [
+{ href: '#demo', label: 'Démo' },
 { href: '#fonctionnement', label: 'Fonctionnement' },
 { href: '#fonctionnalites', label: 'Fonctionnalités' },
 { href: '#tarifs', label: 'Tarifs' },
 { href: '#faq', label: 'FAQ' }];
 
-
 export function MarketingNav() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [demoOpen, setDemoOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/80 backdrop-blur-xl">
+    <header
+      className={`sticky top-0 z-50 border-b bg-background/85 backdrop-blur-xl transition-shadow ${
+      scrolled ? 'border-border shadow-soft' : 'border-transparent'}`}>
       <div className="mx-auto flex h-16 w-full max-w-[1160px] items-center gap-6 px-5">
-        <Link to="/" aria-label="SELLIA — accueil">
+        <Link to="/" aria-label="SELLIA, accueil">
           <Logo />
         </Link>
 
-        <nav className="hidden flex-1 items-center gap-1 md:flex">
+        <nav className="hidden flex-1 items-center gap-1 lg:flex" aria-label="Navigation principale">
           {links.map((link) =>
           <a
             key={link.href}
             href={link.href}
-            className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
-            
+            className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
               {link.label}
             </a>
           )}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setDemoOpen((value) => !value)}
-              className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Voir la démo
-              <ChevronDown className="size-3.5" />
-            </button>
-            {demoOpen &&
-            <div className="absolute left-0 top-full z-50 mt-2 w-[260px] rounded-2xl border border-border bg-card p-3 shadow-lift">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDemoOpen(false);
-                    navigate('/demo/basic');
-                  }}
-                  className="block w-full rounded-xl p-3 text-left hover:bg-secondary">
-                  <span className="block text-sm font-semibold">Boutique Basic</span>
-                  <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
-                    Démo simple, gratuite, jusqu'à 5 produits.
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDemoOpen(false);
-                    navigate('/demo/premium');
-                  }}
-                  className="mt-1 block w-full rounded-xl p-3 text-left hover:bg-secondary">
-                  <span className="block text-sm font-semibold">Boutique Premium</span>
-                  <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
-                    Démo avancée avec sections, avis et personnalisation.
-                  </span>
-                </button>
-              </div>
-            }
-          </div>
         </nav>
 
-        <div className="ml-auto hidden items-center gap-2 md:flex">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/connexion')}>
+        <div className="ml-auto hidden items-center gap-2 lg:flex">
+          <Button variant="ghost" onClick={() => navigate('/connexion')}>
             Connexion
           </Button>
-          <Button size="sm" onClick={() => navigate('/inscription')}>
+          <Button className="h-9 px-4" onClick={() => navigate('/inscription')}>
             Créer ma boutique
           </Button>
         </div>
@@ -84,59 +56,43 @@ export function MarketingNav() {
         <Button
           variant="ghost"
           size="icon"
-          className="ml-auto md:hidden"
+          className="ml-auto lg:hidden"
           aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'}
           aria-expanded={open}
           onClick={() => setOpen((value) => !value)}>
-          
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </Button>
       </div>
 
-      {open &&
-      <div className="border-t border-border bg-background px-5 py-4 md:hidden">
-          <nav className="flex flex-col">
-            {links.map((link) =>
-          <a
-            key={link.href}
-            href={link.href}
-            onClick={() => setOpen(false)}
-            className="rounded-lg px-1 py-2.5 text-sm font-medium text-muted-foreground">
-            
-                {link.label}
-              </a>
-          )}
-          </nav>
-          <div className="mt-3 grid gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setOpen(false);
-                navigate('/demo/basic');
-              }}>
-              Voir la boutique Basic
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setOpen(false);
-                navigate('/demo/premium');
-              }}>
-              Voir la boutique Premium
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/connexion')}>
-              Connexion
-            </Button>
-            <Button
-              onClick={() => {
-                setOpen(false);
-                navigate('/inscription');
-              }}>
-              Créer ma boutique
-            </Button>
-          </div>
-        </div>
-      }
+      <AnimatePresence initial={false}>
+        {open &&
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.22 }}
+          className="overflow-hidden border-t border-border bg-background lg:hidden">
+            <nav className="flex flex-col px-5 pt-2" aria-label="Navigation mobile">
+              {links.map((link) =>
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={() => setOpen(false)}
+              className="rounded-lg py-3 text-[15px] font-medium text-foreground">
+                  {link.label}
+                </a>
+            )}
+            </nav>
+            <div className="grid gap-2 px-5 pb-5 pt-2">
+              <Button className="h-11" onClick={() => navigate('/inscription')}>
+                Créer ma boutique gratuitement
+              </Button>
+              <Button variant="outline" className="h-11" onClick={() => navigate('/connexion')}>
+                Connexion
+              </Button>
+            </div>
+          </motion.div>
+        }
+      </AnimatePresence>
     </header>);
-
 }
