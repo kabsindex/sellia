@@ -7,7 +7,7 @@ import { WhatsAppIcon } from '../shared/WhatsAppIcon';
 import { Reveal, easeOut, useScript } from './motion';
 
 const LINK = 'sellia.app/ma-boutique';
-const durations = [1800, 1800, 4200];
+const durations = [1400, 900, 600, 600, 600, 600, 2800];
 const channels = [
 { label: 'Message WhatsApp', hint: 'Envoie-le à tes clients', icon: WhatsAppIcon, tone: 'bg-[#25d366]/15 text-[#0b7a3a]' },
 { label: 'Statut WhatsApp', hint: 'Visible 24 h par tes contacts', icon: WhatsAppIcon, tone: 'bg-[#25d366]/15 text-[#0b7a3a]' },
@@ -18,6 +18,7 @@ export function LinkShare() {
   const { ref, step, setStep } = useScript(durations);
   const [copied, setCopied] = useState(false);
   const showCopied = copied || step >= 1;
+  const activeChannels = step < 2 ? 0 : Math.min(step - 1, channels.length);
 
   async function copyLink() {
     try {
@@ -51,15 +52,15 @@ export function LinkShare() {
             <button
               type="button"
               onClick={copyLink}
-              className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-brand px-4 text-sm font-semibold text-brand-foreground transition-transform hover:-translate-y-0.5 active:translate-y-0">
-              <AnimatePresence mode="wait" initial={false}>
+              className="relative h-10 w-[98px] shrink-0 overflow-hidden rounded-xl bg-brand text-sm font-semibold text-brand-foreground transition-transform hover:-translate-y-0.5 active:translate-y-0">
+              <AnimatePresence initial={false}>
                 <motion.span
                   key={showCopied ? 'ok' : 'copy'}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 0.15 }}
-                  className="inline-flex items-center gap-1.5">
+                  initial={{ opacity: 0, y: 7 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -7 }}
+                  transition={{ duration: 0.28, ease: easeOut }}
+                  className="absolute inset-0 inline-flex transform-gpu items-center justify-center gap-1.5 will-change-transform">
                   {showCopied ? <Check className="size-4" /> : <Copy className="size-4" />}
                   {showCopied ? 'Copié' : 'Copier'}
                 </motion.span>
@@ -69,16 +70,19 @@ export function LinkShare() {
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {channels.map((channel, index) => {
-              const on = step >= 2;
+              const on = index < activeChannels;
               return (
                 <motion.div
                   key={channel.label}
-                  animate={{ opacity: on ? 1 : 0.45, y: on ? 0 : 6 }}
-                  transition={{ duration: 0.4, delay: on ? index * 0.12 : 0, ease: easeOut }}
-                  className="rounded-2xl border border-border bg-background p-4">
-                  <span className={`grid size-9 place-items-center rounded-xl ${channel.tone}`}>
+                  animate={{ opacity: on ? 1 : 0.48, y: on ? 0 : 7, scale: on ? 1 : 0.985 }}
+                  transition={{ duration: 0.48, ease: easeOut }}
+                  className="transform-gpu rounded-2xl border border-border bg-background p-4 will-change-transform">
+                  <motion.span
+                    animate={{ scale: on ? [1, 1.08, 1] : 1 }}
+                    transition={{ duration: 0.42, ease: easeOut }}
+                    className={`grid size-9 place-items-center rounded-xl ${channel.tone}`}>
                     <channel.icon className="size-[18px]" />
-                  </span>
+                  </motion.span>
                   <p className="mt-3 text-sm font-semibold">{channel.label}</p>
                   <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{channel.hint}</p>
                 </motion.div>);
