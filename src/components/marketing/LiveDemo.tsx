@@ -81,10 +81,10 @@ export function LiveDemo() {
 
           <div className="flex justify-center">
             <PhoneFrame screenClassName="h-[560px]">
-              <AnimatePresence mode="wait" initial={false}>
+              <AnimatePresence initial={false}>
                 <motion.div
                   key={screen}
-                  className="h-full"
+                  className="absolute inset-0 h-full"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}

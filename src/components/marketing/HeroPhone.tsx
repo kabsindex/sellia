@@ -21,10 +21,10 @@ export function HeroPhone() {
       <div className="relative">
       <div aria-hidden="true" className="absolute -inset-x-5 bottom-6 top-14 rounded-[44px] bg-brand-soft" />
       <PhoneFrame className="relative" screenClassName="h-[600px]">
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence initial={false}>
           <motion.div
             key={screen}
-            className="h-full"
+            className="absolute inset-0 h-full"
             initial={{ opacity: 0, x: screen === 'shop' ? 0 : 24 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0 }}
