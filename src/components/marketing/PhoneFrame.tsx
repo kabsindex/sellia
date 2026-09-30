@@ -11,7 +11,7 @@ export function PhoneFrame({ children, className, screenClassName }: PhoneFrameP
   return (
     <div
       className={cn(
-        'relative w-[288px] shrink-0 rounded-[38px] border border-black/10 bg-ink p-2 shadow-lift',
+        'relative w-[288px] max-w-full shrink-0 rounded-[38px] border border-black/10 bg-ink p-2 shadow-lift',
         className
       )}>
       
