@@ -107,6 +107,7 @@ export const faq = [
 
 
 export const trustStats = [
-{ value: '4 200+', label: 'boutiques créées' },
-{ value: '3 min', label: 'pour être en ligne' },
-{ value: '0%', label: 'commission sur tes ventes' }];
+{ value: '0%', label: 'de commission sur tes ventes' },
+{ value: '5', label: 'produits gratuits pour démarrer' },
+{ value: '1 lien', label: 'à partager partout' }];
+

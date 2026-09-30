@@ -25,7 +25,7 @@ export function StorePreviewSection() {
     <section id="demo-boutique" className="scroll-mt-16 border-b border-border bg-background py-16 lg:py-24">
       <div className="mx-auto grid w-full max-w-[1160px] gap-12 px-5 lg:grid-cols-2 lg:items-center">
         <div className="order-2 lg:order-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand">
+          <p className="text-sm font-medium text-brand-strong">
             Aperçu d’une boutique
           </p>
           <h2 className="mt-3 font-heading text-[28px] font-semibold leading-tight tracking-[-0.02em] sm:text-[36px]">
