@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { Reveal } from './motion';
 
 export function FinalCta() {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ export function FinalCta() {
   return (
     <section className="border-b border-border bg-background py-16 lg:py-24">
       <div className="mx-auto w-full max-w-[1160px] px-5">
-        <div className="relative overflow-hidden rounded-3xl border border-border bg-brand-soft px-6 py-14 text-center sm:px-14">
+        <Reveal className="relative overflow-hidden rounded-3xl border border-border bg-brand-soft px-6 py-14 text-center sm:px-14">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute -right-16 -top-16 size-56 rounded-full bg-brand/10 blur-2xl" />
@@ -34,7 +35,7 @@ export function FinalCta() {
               J’ai déjà un compte
             </Button>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>);
 
