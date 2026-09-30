@@ -3,6 +3,21 @@ import { animate, motion, useInView, useReducedMotion } from 'framer-motion';
 
 export const easeOut = [0.22, 1, 0.36, 1] as const;
 
+function useDesktopViewport() {
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 1024px)');
+    const update = () => setIsDesktop(media.matches);
+
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  return isDesktop;
+}
+
 /** Apparition discrète au scroll (une seule fois). Désactivée si l'utilisateur réduit les animations. */
 export function Reveal({
   children,
@@ -56,17 +71,19 @@ export function AnimatedNumber({
 export function useScript(durations: number[]) {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { margin: '-10% 0px' });
+  const inView = useInView(ref, { margin: '120px 0px', amount: 0.01 });
+  const isDesktop = useDesktopViewport();
   const [step, setStep] = useState(reduce ? durations.length - 1 : 0);
+  const shouldPlay = inView || isDesktop;
 
   useEffect(() => {
-    if (reduce || !inView) return;
+    if (reduce || !shouldPlay) return;
     const timer = window.setTimeout(
       () => setStep((current) => (current + 1) % durations.length),
       durations[step]
     );
     return () => window.clearTimeout(timer);
-  }, [step, inView, reduce, durations]);
+  }, [step, shouldPlay, reduce, durations]);
 
   return { ref, step, setStep, reduce: Boolean(reduce) };
 }
