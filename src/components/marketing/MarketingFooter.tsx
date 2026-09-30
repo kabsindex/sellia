@@ -42,7 +42,7 @@ export function MarketingFooter() {
           </div>
           {columns.map((column) =>
           <nav key={column.title} aria-label={column.title}>
-              <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <h2 className="text-sm font-semibold text-foreground">
                 {column.title}
               </h2>
               <ul className="mt-3 space-y-2">
