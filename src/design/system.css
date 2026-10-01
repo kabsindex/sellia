@@ -1,0 +1,128 @@
+/* ==========================================================================
+   SELLIA design system : une seule source pour storefront, dashboard, landing.
+   Les boutiques surchargent ces variables avec leur thème (voir design/theme.ts).
+   ========================================================================== */
+:root {
+  --ds-accent: #10a05c;
+  --ds-accent-strong: #0c8449;
+  --ds-accent-soft: #e8f7ef;
+  --ds-accent-fg: #ffffff;
+
+  --ds-bg: #ffffff;
+  --ds-subtle: #f5f6f6;
+  --ds-card: #ffffff;
+  --ds-ink: #0f1a15;
+  --ds-muted: #6b7a72;
+  --ds-border: #e8ebe9;
+
+  --ds-danger: #e5484d;
+  --ds-danger-soft: #fdecec;
+  --ds-warn: #a86a08;
+  --ds-warn-soft: #fdf3dc;
+
+  --ds-r-xs: 8px;
+  --ds-r-sm: 12px;
+  --ds-r-md: 16px;
+  --ds-r-lg: 20px;
+  --ds-r-full: 999px;
+
+  --ds-shadow-xs: 0 1px 2px rgb(15 26 21 / 0.05);
+  --ds-shadow-sm: 0 2px 10px -3px rgb(15 26 21 / 0.10);
+  --ds-shadow-md: 0 14px 34px -14px rgb(15 26 21 / 0.28);
+
+  --ds-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Boutons ---------- */
+.ds-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+  height: 44px; padding: 0 1.1rem; border-radius: var(--ds-r-sm);
+  font-size: 14px; font-weight: 600; line-height: 1; white-space: nowrap;
+  border: 1px solid transparent; cursor: pointer; user-select: none;
+  transition: transform 0.16s var(--ds-ease), background-color 0.16s, border-color 0.16s, box-shadow 0.16s, opacity 0.16s;
+}
+.ds-btn:active:not(:disabled) { transform: scale(0.97); }
+.ds-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ds-btn:focus-visible, .ds-chip:focus-visible, .ds-icon-btn:focus-visible {
+  outline: 2px solid var(--ds-accent); outline-offset: 2px;
+}
+.ds-btn--primary { background: var(--ds-accent); color: var(--ds-accent-fg); box-shadow: var(--ds-shadow-xs); }
+.ds-btn--primary:hover:not(:disabled) { box-shadow: var(--ds-shadow-sm); filter: brightness(1.04); }
+.ds-btn--soft { background: var(--ds-accent-soft); color: var(--ds-accent-strong); }
+.ds-btn--outline { background: var(--ds-card); color: var(--ds-ink); border-color: var(--ds-border); }
+.ds-btn--outline:hover:not(:disabled) { background: var(--ds-subtle); }
+.ds-btn--ghost { background: transparent; color: var(--ds-ink); }
+.ds-btn--ghost:hover:not(:disabled) { background: var(--ds-subtle); }
+.ds-btn--dark { background: var(--ds-ink); color: var(--ds-bg); }
+.ds-btn--danger { background: var(--ds-danger-soft); color: var(--ds-danger); }
+.ds-btn--sm { height: 36px; padding: 0 0.85rem; font-size: 13px; border-radius: 10px; }
+.ds-btn--lg { height: 52px; padding: 0 1.4rem; font-size: 15px; border-radius: var(--ds-r-md); }
+.ds-btn--block { width: 100%; }
+
+.ds-icon-btn {
+  display: inline-grid; place-items: center; width: 40px; height: 40px; flex: none;
+  border-radius: var(--ds-r-full); border: 1px solid var(--ds-border);
+  background: var(--ds-card); color: var(--ds-ink); box-shadow: var(--ds-shadow-xs); cursor: pointer;
+  transition: transform 0.16s var(--ds-ease), background-color 0.16s;
+}
+.ds-icon-btn:active { transform: scale(0.92); }
+.ds-icon-btn--glass { background: rgb(255 255 255 / 0.92); color: #0f1a15; border-color: transparent; backdrop-filter: blur(8px); }
+.ds-icon-btn--sm { width: 32px; height: 32px; }
+
+/* ---------- Cartes, puces, badges, champs ---------- */
+.ds-card { background: var(--ds-card); border: 1px solid var(--ds-border); border-radius: var(--ds-r-md); box-shadow: var(--ds-shadow-xs); }
+.ds-card--flat { box-shadow: none; }
+
+.ds-chip {
+  display: inline-flex; align-items: center; gap: 0.35rem; height: 34px; padding: 0 0.9rem; flex: none;
+  border-radius: var(--ds-r-full); border: 1px solid var(--ds-border); background: var(--ds-card);
+  color: var(--ds-muted); font-size: 13px; font-weight: 500; white-space: nowrap; cursor: pointer;
+  transition: background-color 0.18s, color 0.18s, border-color 0.18s, transform 0.16s var(--ds-ease);
+}
+.ds-chip:active { transform: scale(0.96); }
+.ds-chip[data-active='true'] { background: var(--ds-accent); border-color: var(--ds-accent); color: var(--ds-accent-fg); font-weight: 600; }
+.ds-chip--square { border-radius: var(--ds-r-xs); min-width: 44px; justify-content: center; height: 38px; }
+.ds-chip[data-active='true'].ds-chip--outline-active { background: var(--ds-accent-soft); color: var(--ds-accent-strong); }
+
+.ds-badge {
+  display: inline-flex; align-items: center; gap: 0.25rem; height: 22px; padding: 0 0.5rem;
+  border-radius: 7px; font-size: 11px; font-weight: 700; line-height: 1; white-space: nowrap;
+  background: var(--ds-subtle); color: var(--ds-muted);
+}
+.ds-badge--accent { background: var(--ds-accent-soft); color: var(--ds-accent-strong); }
+.ds-badge--solid { background: var(--ds-accent); color: var(--ds-accent-fg); }
+.ds-badge--danger { background: var(--ds-danger-soft); color: var(--ds-danger); }
+.ds-badge--warn { background: var(--ds-warn-soft); color: var(--ds-warn); }
+.ds-badge--ink { background: var(--ds-ink); color: var(--ds-bg); }
+
+.ds-input {
+  width: 100%; height: 44px; padding: 0 0.9rem; border-radius: var(--ds-r-sm);
+  border: 1px solid var(--ds-border); background: var(--ds-card); color: var(--ds-ink); font-size: 14px;
+  transition: border-color 0.16s, box-shadow 0.16s;
+}
+.ds-input::placeholder { color: var(--ds-muted); }
+.ds-input:focus { outline: none; border-color: var(--ds-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-accent) 18%, transparent); }
+.ds-search {
+  display: flex; align-items: center; gap: 0.55rem; height: 44px; padding: 0 0.9rem;
+  border-radius: var(--ds-r-full); background: var(--ds-subtle); color: var(--ds-muted);
+  border: 1px solid transparent; transition: border-color 0.16s, background-color 0.16s;
+}
+.ds-search:focus-within { background: var(--ds-card); border-color: var(--ds-accent); }
+.ds-search input { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; font-size: 14px; color: var(--ds-ink); }
+
+.ds-stepper { display: inline-flex; align-items: center; border: 1px solid var(--ds-border); border-radius: var(--ds-r-sm); background: var(--ds-card); }
+.ds-stepper button { display: grid; place-items: center; width: 34px; height: 34px; color: var(--ds-ink); border-radius: var(--ds-r-xs); }
+.ds-stepper button:disabled { opacity: 0.35; }
+.ds-stepper output { min-width: 26px; text-align: center; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.ds-divider { height: 1px; background: var(--ds-border); }
+.ds-title { font-family: var(--font-heading, inherit); font-weight: 700; letter-spacing: -0.02em; color: var(--ds-ink); }
+.ds-muted { color: var(--ds-muted); }
+.ds-price { font-weight: 700; color: var(--ds-ink); font-variant-numeric: tabular-nums; }
+.ds-scroll-x { display: flex; gap: 0.5rem; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
+.ds-scroll-x::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-btn, .ds-chip, .ds-icon-btn { transition: none; }
+  .ds-btn:active:not(:disabled), .ds-chip:active, .ds-icon-btn:active { transform: none; }
+}
