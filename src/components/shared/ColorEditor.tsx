@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
 import type { ColorOption } from '../../types';
 
 const palette = [
@@ -30,13 +28,13 @@ export function ColorEditor({ colors, onChange }: ColorEditorProps) {
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium">Couleurs disponibles</p>
+      <p className="ds-label">Couleurs disponibles</p>
 
       {colors.length > 0 &&
       <ul className="flex flex-wrap gap-1.5">
           {colors.map((color) =>
         <li key={color.name}>
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-2 py-1 text-xs font-medium">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--ds-border)] bg-[var(--ds-subtle)] px-2.5 py-1 text-[12.5px] font-medium">
                 <span
               className="size-3 rounded-full border border-black/10"
               style={{ backgroundColor: color.hex }} />
@@ -60,7 +58,7 @@ export function ColorEditor({ colors, onChange }: ColorEditorProps) {
         <label className="sr-only" htmlFor="colorName">
           Nom de la couleur
         </label>
-        <Input
+        <input className="ds-input"
           id="colorName"
           value={name}
           onChange={(event) => setName(event.target.value)}
@@ -74,17 +72,14 @@ export function ColorEditor({ colors, onChange }: ColorEditorProps) {
           type="color"
           value={hex}
           onChange={(event) => setHex(event.target.value)}
-          className="h-8 w-10 shrink-0 cursor-pointer rounded-lg border border-border bg-card p-0.5" />
+          className="h-[44px] w-12 shrink-0 cursor-pointer rounded-[12px] border border-[var(--ds-border)] bg-[var(--ds-card)] p-1" />
         
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
+        <button type="button" className="ds-icon-btn"
           onClick={() => add({ name, hex })}
           aria-label="Ajouter la couleur">
           
           <Plus className="size-4" />
-        </Button>
+        </button>
       </div>
 
       <div className="flex flex-wrap gap-1.5">

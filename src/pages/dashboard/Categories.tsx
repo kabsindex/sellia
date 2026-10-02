@@ -1,37 +1,20 @@
-import React, { useState } from 'react';
-import { toast } from 'sonner';
+import { useState } from 'react';
 import { Check, Pencil, Plus, Tags, Trash2, X } from 'lucide-react';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import { Label } from '../../components/ui/Label';
-import {
-  CategoryIcon,
-  categoryIconOptions,
-  resolveCategoryIcon
-} from '../../components/shared/CategoryIcon';
+import { toast } from 'sonner';
+import { DsButton, EmptyState, Field, IconButton, PageHeader } from '../../components/ds';
+import { CategoryIcon, categoryIconOptions, resolveCategoryIcon } from '../../components/shared/CategoryIcon';
 import { useSellia } from '../../contexts/SelliaContext';
 
 const suggestions = [
-  { name: 'Nouveautés', icon: 'package' },
-  { name: 'Promotions', icon: 'tag' },
-  { name: 'Sacs', icon: 'shopping-bag' },
-  { name: 'Montres', icon: 'watch' },
-  { name: 'Parfums', icon: 'sparkles' }
-];
+{ name: 'Nouveautés', icon: 'package' },
+{ name: 'Promotions', icon: 'tag' },
+{ name: 'Sacs', icon: 'shopping-bag' },
+{ name: 'Montres', icon: 'watch' },
+{ name: 'Parfums', icon: 'sparkles' }];
 
-interface IconPickerProps {
-  value: string;
-  onChange: (value: string) => void;
-  compact?: boolean;
-}
-
-function IconPicker({ value, onChange, compact = false }: IconPickerProps) {
+function IconPicker({ value, onChange }: {value: string;onChange: (value: string) => void;}) {
   return (
-    <div
-      role="radiogroup"
-      aria-label="Icône de la catégorie"
-      className={`grid gap-1.5 ${compact ? 'grid-cols-8 sm:grid-cols-12' : 'grid-cols-6 sm:grid-cols-8 lg:grid-cols-6'}`}
-    >
+    <div role="radiogroup" aria-label="Icône de la catégorie" className="grid grid-cols-6 gap-1.5 sm:grid-cols-8 lg:grid-cols-6">
       {categoryIconOptions.map((option) => {
         const Icon = option.icon;
         const selected = value === option.value;
@@ -44,18 +27,12 @@ function IconPicker({ value, onChange, compact = false }: IconPickerProps) {
             aria-label={option.label}
             title={option.label}
             onClick={() => onChange(option.value)}
-            className={`grid aspect-square min-h-9 place-items-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 ${
-              selected
-                ? 'border-brand bg-brand text-white'
-                : 'border-border bg-background text-muted-foreground hover:border-brand hover:text-brand-strong'
-            }`}
-          >
-            <Icon className="size-4" />
-          </button>
-        );
+            className="grid aspect-square min-h-10 place-items-center rounded-[11px] transition-colors"
+            style={selected ? { background: 'var(--ds-accent)', color: 'var(--ds-accent-fg)' } : { background: 'var(--ds-subtle)', color: 'var(--ds-muted)' }}>
+            <Icon className="size-[18px]" />
+          </button>);
       })}
-    </div>
-  );
+    </div>);
 }
 
 export function Categories() {
@@ -76,166 +53,57 @@ export function Categories() {
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
-      <section className="rounded-2xl border border-border bg-card shadow-soft">
-        <header className="flex items-center justify-between border-b border-border px-4 py-3.5">
-          <h2 className="font-heading text-sm font-semibold">
-            Mes catégories ({categories.length})
-          </h2>
-          <Tags className="size-4 text-muted-foreground" />
-        </header>
-
-        {categories.length === 0 ? (
-          <div className="p-10 text-center">
-            <p className="text-sm text-muted-foreground">
-              Aucune catégorie. Crée-en une pour organiser ton catalogue.
-            </p>
+    <div className="mx-auto w-full max-w-[1180px]">
+      <PageHeader title="Catégories" description="Elles apparaissent en cercles sur ta boutique, avec l’image de ton premier produit." />
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
+        <form onSubmit={handleAdd} className="ds-card p-4 lg:order-2">
+          <h2 className="ds-title text-[16px]">Nouvelle catégorie</h2>
+          <Field label="Nom" htmlFor="category-name" className="mt-3">
+            <input id="category-name" className="ds-input" value={name} onChange={(event) => setName(event.target.value)} placeholder="Ex. Sacs à main" />
+          </Field>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {suggestions.filter((item) => !categories.some((category) => category.name.toLowerCase() === item.name.toLowerCase())).map((item) =>
+            <button key={item.name} type="button" className="ds-chip" onClick={() => { setName(item.name); setIcon(item.icon); }}>{item.name}</button>
+            )}
           </div>
-        ) : (
-          <ul className="divide-y divide-border">
-            {categories.map((category) => {
-              const count = products.filter((product) => product.categoryId === category.id).length;
-              const editing = editingId === category.id;
-              return (
-                <li key={category.id} className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-secondary text-muted-foreground">
-                      <CategoryIcon
-                        slug={category.slug}
-                        icon={editing ? editingIcon : category.emoji}
-                        className="size-4.5"
-                      />
-                    </span>
-
-                    {editing ? (
-                      <>
-                        <Input
-                          value={editingName}
-                          onChange={(event) => setEditingName(event.target.value)}
-                          className="min-w-0 flex-1"
-                          aria-label="Nouveau nom de la catégorie"
-                          autoFocus
-                        />
-                        <Button
-                          size="icon-sm"
-                          aria-label="Enregistrer"
-                          onClick={() => {
-                            renameCategory(
-                              category.id,
-                              editingName.trim() || category.name,
-                              editingIcon
-                            );
-                            setEditingId(null);
-                            toast.success('Catégorie mise à jour.');
-                          }}
-                        >
-                          <Check className="size-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label="Annuler"
-                          onClick={() => setEditingId(null)}
-                        >
-                          <X className="size-4" />
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{category.name}</p>
-                          <p className="font-mono text-[11px] text-muted-foreground">
-                            /{category.slug} · {count} produit{count > 1 ? 's' : ''}
-                          </p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label={`Modifier ${category.name}`}
-                          onClick={() => {
-                            setEditingId(category.id);
-                            setEditingName(category.name);
-                            setEditingIcon(resolveCategoryIcon(category.slug, category.emoji));
-                          }}
-                        >
-                          <Pencil className="size-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label={`Supprimer ${category.name}`}
-                          onClick={() => {
-                            deleteCategory(category.id);
-                            toast.success('Catégorie supprimée.');
-                          }}
-                        >
-                          <Trash2 className="size-4 text-destructive" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
-
-                  {editing && (
-                    <div className="ml-12 mt-3">
-                      <Label className="mb-2 block">Icône</Label>
-                      <IconPicker value={editingIcon} onChange={setEditingIcon} compact />
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
-
-      <aside className="rounded-2xl border border-border bg-card p-4 shadow-soft">
-        <h2 className="font-heading text-sm font-semibold">Nouvelle catégorie</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Les catégories apparaissent en filtres sur ta boutique publique.
-        </p>
-
-        <form onSubmit={handleAdd} className="mt-4 space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="categoryName">Nom</Label>
-            <Input
-              id="categoryName"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Sneakers"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Icône</Label>
-            <IconPicker value={icon} onChange={setIcon} />
-          </div>
-          <Button type="submit" className="w-full" disabled={!name.trim()}>
-            <Plus className="size-4" />
-            Créer la catégorie
-          </Button>
+          <p className="ds-label mt-4">Icône</p>
+          <IconPicker value={icon} onChange={setIcon} />
+          <DsButton type="submit" block className="mt-4" disabled={!name.trim()}><Plus className="size-4" />Créer la catégorie</DsButton>
         </form>
 
-        <div className="mt-5 border-t border-border pt-4">
-          <p className="text-xs text-muted-foreground">Suggestions</p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {suggestions
-              .filter((item) => !categories.some((category) => category.name === item.name))
-              .map((item) => (
-                <button
-                  key={item.name}
-                  type="button"
-                  onClick={() => {
-                    addCategory(item.name, item.icon);
-                    toast.success(`Catégorie « ${item.name} » créée.`);
-                  }}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-border px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:border-brand hover:text-brand-strong"
-                >
-                  <CategoryIcon slug={item.name} icon={item.icon} className="size-3" />
-                  {item.name}
-                </button>
-              ))}
-          </div>
-        </div>
-      </aside>
-    </div>
-  );
+        <section className="ds-card overflow-hidden lg:order-1">
+          <h2 className="ds-title px-4 pb-1 pt-4 text-[16px]">Mes catégories ({categories.length})</h2>
+          {categories.length === 0 ?
+          <EmptyState icon={Tags} title="Aucune catégorie" text="Crée-en une pour organiser ton catalogue." /> :
+          categories.map((category) => {
+            const count = products.filter((product) => product.categoryId === category.id).length;
+            const editing = editingId === category.id;
+            return (
+              <div key={category.id} className="px-4 py-3" style={{ borderTop: '1px solid var(--ds-border)' }}>
+                <div className="flex items-center gap-3">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-full" style={{ background: 'var(--ds-accent-soft)', color: 'var(--ds-accent-strong)' }}>
+                    <CategoryIcon slug={category.slug} icon={editing ? editingIcon : category.emoji} className="size-[20px]" />
+                  </span>
+                  {editing ?
+                  <>
+                      <input value={editingName} onChange={(event) => setEditingName(event.target.value)} className="ds-input min-w-0 flex-1" aria-label="Nouveau nom de la catégorie" autoFocus />
+                      <IconButton label="Enregistrer" small onClick={() => { renameCategory(category.id, editingName.trim() || category.name, editingIcon); setEditingId(null); toast.success('Catégorie mise à jour.'); }}><Check className="size-4" /></IconButton>
+                      <IconButton label="Annuler" small onClick={() => setEditingId(null)}><X className="size-4" /></IconButton>
+                    </> :
+                  <>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[14px] font-semibold">{category.name}</p>
+                        <p className="ds-muted text-[12px]">{count} produit{count > 1 ? 's' : ''}</p>
+                      </div>
+                      <IconButton label={`Modifier ${category.name}`} small onClick={() => { setEditingId(category.id); setEditingName(category.name); setEditingIcon(resolveCategoryIcon(category.slug, category.emoji)); }}><Pencil className="size-4" /></IconButton>
+                      <IconButton label={`Supprimer ${category.name}`} small onClick={() => { if (window.confirm(`Supprimer la catégorie « ${category.name} » ?`)) { deleteCategory(category.id); toast.success('Catégorie supprimée.'); } }}><Trash2 className="size-4" style={{ color: 'var(--ds-danger)' }} /></IconButton>
+                    </>
+                  }
+                </div>
+                {editing && <div className="mt-3"><IconPicker value={editingIcon} onChange={setEditingIcon} /></div>}
+              </div>);
+          })}
+        </section>
+      </div>
+    </div>);
 }

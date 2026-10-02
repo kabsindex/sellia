@@ -59,7 +59,7 @@ export function Chip({
       {...props} />);
 }
 
-type BadgeTone = 'neutral' | 'accent' | 'solid' | 'danger' | 'warn' | 'ink';
+type BadgeTone = 'neutral' | 'accent' | 'solid' | 'danger' | 'warn' | 'ink' | 'info' | 'violet';
 export function Badge({ tone = 'neutral', className, ...props }: React.HTMLAttributes<HTMLSpanElement> & {tone?: BadgeTone;}) {
   return <span className={cn('ds-badge', tone !== 'neutral' && `ds-badge--${tone}`, className)} {...props} />;
 }
@@ -152,4 +152,107 @@ export function EmptyState({
       {text && <p className="ds-muted mt-1.5 text-[14px] leading-relaxed">{text}</p>}
       {children && <div className="mt-5">{children}</div>}
     </motion.div>);
+}
+
+/* ---------------------------------------------------------------------------
+   Briques dashboard (même design system que le storefront)
+   ------------------------------------------------------------------------- */
+
+export function PageHeader({
+  title,
+  description,
+  actions
+}: {title: string;description?: string;actions?: React.ReactNode;}) {
+  return (
+    <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="min-w-0">
+        <h1 className="ds-title text-[22px] leading-tight lg:text-[26px]">{title}</h1>
+        {description && <p className="ds-muted mt-1 text-[14px]">{description}</p>}
+      </div>
+      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+    </div>);
+}
+
+export function StatTile({
+  label,
+  icon: Icon,
+  children,
+  hint,
+  tone = 'accent'
+}: {
+  label: string;
+  icon: React.ComponentType<{className?: string;}>;
+  children: React.ReactNode;
+  hint?: React.ReactNode;
+  tone?: 'accent' | 'ink' | 'warn';
+}) {
+  const colors = {
+    accent: { background: 'var(--ds-accent-soft)', color: 'var(--ds-accent-strong)' },
+    ink: { background: 'var(--ds-subtle)', color: 'var(--ds-ink)' },
+    warn: { background: 'var(--ds-warn-soft)', color: 'var(--ds-warn)' }
+  }[tone];
+  return (
+    <div className="ds-card p-3.5 lg:p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="ds-muted text-[12.5px] font-medium leading-tight">{label}</p>
+        <span className="grid size-7 shrink-0 place-items-center rounded-[9px]" style={colors}><Icon className="size-[15px]" /></span>
+      </div>
+      <p className="ds-title mt-2 text-[24px] leading-none lg:text-[28px]">{children}</p>
+      {hint && <p className="ds-muted mt-1.5 text-[12px]">{hint}</p>}
+    </div>);
+}
+
+/** Onglets segmentés (filtres de liste). */
+export function Segmented<T extends string>({
+  value,
+  options,
+  onChange,
+  label
+}: {value: T;options: {id: T;label: string;count?: number;}[];onChange: (value: T) => void;label: string;}) {
+  return (
+    <div role="tablist" aria-label={label} className="ds-seg max-w-full overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+      {options.map((option) =>
+      <button key={option.id} type="button" role="tab" aria-selected={value === option.id} onClick={() => onChange(option.id)}>
+          {value === option.id &&
+        <motion.span layoutId={`seg-${label}`} className="absolute inset-0 rounded-[9px]" style={{ background: 'var(--ds-card)', boxShadow: 'var(--ds-shadow-xs)' }} transition={{ type: 'spring', stiffness: 520, damping: 38 }} />
+        }
+          <span className="relative inline-flex items-center gap-1.5">
+            {option.label}
+            {option.count !== undefined && option.count > 0 && <span className="ds-badge ds-badge--accent !h-[18px] !px-1.5 !text-[10px]">{option.count}</span>}
+          </span>
+        </button>
+      )}
+    </div>);
+}
+
+export function Toggle({ checked, onChange, label }: {checked: boolean;onChange: (value: boolean) => void;label: string;}) {
+  return <button type="button" role="switch" aria-checked={checked} aria-label={label} className="ds-toggle" onClick={() => onChange(!checked)} />;
+}
+
+export function Field({
+  label,
+  hint,
+  htmlFor,
+  children,
+  className
+}: {label: string;hint?: string;htmlFor?: string;children: React.ReactNode;className?: string;}) {
+  return (
+    <div className={className}>
+      <label htmlFor={htmlFor} className="ds-label">{label}</label>
+      {children}
+      {hint && <p className="ds-hint">{hint}</p>}
+    </div>);
+}
+
+export function SearchField({
+  value,
+  onChange,
+  placeholder,
+  className
+}: {value: string;onChange: (value: string) => void;placeholder: string;className?: string;}) {
+  return (
+    <label className={cn('ds-search', className)}>
+      <svg viewBox="0 0 24 24" className="size-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+      <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} aria-label={placeholder} />
+    </label>);
 }
