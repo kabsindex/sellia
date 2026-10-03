@@ -1,34 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { toast } from 'sonner';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Check, LogOut, Trash2, UserPlus } from 'lucide-react';
-import { Button } from '../../components/ui/Button';
-import { cn } from '../../utils/cn';
-import { Input } from '../../components/ui/Input';
-import { Label } from '../../components/ui/Label';
-import { Badge } from '../../components/ui/Badge';
-import { Switch } from '../../components/ui/CSwitch';
-import { Separator } from '../../components/ui/Separator';
+import { toast } from 'sonner';
+import { Badge, DsButton, Field, Toggle } from '../../components/ds';
 import { PremiumUpgradeDialog } from '../../components/shared/PremiumUpgradeDialog';
 import { useSellia } from '../../contexts/SelliaContext';
 import { plans } from '../../data/plans';
 import { api } from '../../utils/api';
+import { cn } from '../../utils/cn';
+
+const notificationItems = [
+{ key: 'newOrder', label: 'Nouvelle commande', hint: 'Une alerte dès qu’un client commande.' },
+{ key: 'dailyRecap', label: 'Récapitulatif quotidien', hint: 'Un résumé de tes ventes chaque soir.' },
+{ key: 'tips', label: 'Conseils de vente SELLIA', hint: 'Astuces pour vendre plus sur WhatsApp.' }];
 
 export function Settings() {
-  const { user, store, setPlan, openBillingPortal, refreshDashboard } = useSellia();
+  const { user, store, setPlan, openBillingPortal, refreshDashboard, logout } = useSellia();
   const location = useLocation();
+  const navigate = useNavigate();
   const stripeReturn = new URLSearchParams(location.search).get('stripe');
-  const [profile, setProfile] = useState({
-    firstName: user?.firstName ?? '',
-    lastName: user?.lastName ?? '',
-    email: user?.email ?? '',
-    whatsapp: user?.whatsapp ?? ''
-  });
-  const [notifications, setNotifications] = useState({
-    newOrder: true,
-    dailyRecap: false,
-    tips: true
-  });
   const [changingPlan, setChangingPlan] = useState(false);
   const [premiumDialogOpen, setPremiumDialogOpen] = useState(false);
   const [managedByStripe, setManagedByStripe] = useState<boolean | null>(null);
@@ -36,10 +26,10 @@ export function Settings() {
   useEffect(() => {
     if (user?.plan !== 'premium' || !store.slug) return undefined;
     let cancelled = false;
-    void api<{ managedByStripe: boolean }>(`/stores/${encodeURIComponent(store.slug)}/billing`)
-      .then((result) => { if (!cancelled) setManagedByStripe(result.managedByStripe); })
-      .catch(() => { if (!cancelled) setManagedByStripe(null); });
-    return () => { cancelled = true; };
+    void api<{managedByStripe: boolean;}>(`/stores/${encodeURIComponent(store.slug)}/billing`).
+    then((result) => {if (!cancelled) setManagedByStripe(result.managedByStripe);}).
+    catch(() => {if (!cancelled) setManagedByStripe(null);});
+    return () => {cancelled = true;};
   }, [store.slug, user?.plan]);
 
   useEffect(() => {
@@ -53,224 +43,102 @@ export function Settings() {
     return () => window.clearInterval(timer);
   }, [refreshDashboard, stripeReturn, user?.plan]);
 
+  function choosePlan(planId: 'basic' | 'premium', name: string) {
+    if (planId === 'premium') {
+      setPremiumDialogOpen(true);
+      return;
+    }
+    setChangingPlan(true);
+    void setPlan(planId).
+    then(() => toast.success(`Plan ${name} activé.`)).
+    catch((error) => toast.error(error instanceof Error ? error.message : 'Changement de plan impossible.')).
+    finally(() => setChangingPlan(false));
+  }
+
   return (
-    <div className="space-y-4 pb-6">
-      <div>
-        <h2 className="font-heading text-[20px] font-semibold tracking-[-0.02em]">Paramètres</h2>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          Ton compte, ton abonnement et tes notifications.
-        </p>
+    <div className="mx-auto w-full max-w-[860px] space-y-4">
+      <div className="mb-1">
+        <h1 className="ds-title text-[22px] lg:text-[26px]">Paramètres</h1>
+        <p className="ds-muted mt-1 text-[14px]">Ton compte, ton abonnement et tes notifications.</p>
       </div>
 
-      {stripeReturn === 'success' && <p role="status" className="border-l-4 border-brand bg-brand-soft px-4 py-3 text-sm">
-        {user?.plan === 'premium'
-          ? 'Ton abonnement Premium est actif.'
-          : 'Paiement terminé. Nous attendons la confirmation Stripe pour activer Premium.'}
-      </p>}
-      {stripeReturn === 'cancel' && <p role="status" className="border-l-4 border-border bg-secondary px-4 py-3 text-sm">
-        Paiement annulé. Ta boutique reste sur son plan actuel.
-      </p>}
+      {stripeReturn === 'success' &&
+      <p role="status" className="rounded-[14px] px-4 py-3 text-[14px] font-medium" style={{ background: 'var(--ds-accent-soft)', color: 'var(--ds-accent-strong)' }}>
+          {user?.plan === 'premium' ? 'Ton abonnement Premium est actif.' : 'Paiement terminé. Nous attendons la confirmation de Stripe pour activer Premium.'}
+        </p>
+      }
+      {stripeReturn === 'cancel' &&
+      <p role="status" className="rounded-[14px] px-4 py-3 text-[14px]" style={{ background: 'var(--ds-subtle)' }}>Paiement annulé. Ta boutique reste sur son plan actuel.</p>
+      }
 
-      <section className="rounded-2xl border border-border bg-card p-4 shadow-soft sm:p-5">
-        <h3 className="font-heading text-sm font-semibold">Mon compte</h3>
+      <section className="ds-card p-4 sm:p-5">
+        <h2 className="ds-title text-[16px]">Mon compte</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="firstName">Prénom</Label>
-            <Input
-              id="firstName"
-              value={profile.firstName}
-              onChange={(event) => setProfile({ ...profile, firstName: event.target.value })} />
-            
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="lastName">Nom</Label>
-            <Input
-              id="lastName"
-              value={profile.lastName}
-              onChange={(event) => setProfile({ ...profile, lastName: event.target.value })} />
-            
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={profile.email}
-              onChange={(event) => setProfile({ ...profile, email: event.target.value })} />
-            
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="whatsapp">Numéro WhatsApp</Label>
-            <Input
-              id="whatsapp"
-              type="tel"
-              value={profile.whatsapp}
-              onChange={(event) => setProfile({ ...profile, whatsapp: event.target.value })} />
-            
-          </div>
+          <Field label="Prénom"><input className="ds-input" value={user?.firstName ?? ''} readOnly /></Field>
+          <Field label="Nom"><input className="ds-input" value={user?.lastName ?? ''} readOnly /></Field>
+          <Field label="Email"><input className="ds-input" value={user?.email ?? ''} readOnly /></Field>
+          <Field label="Numéro WhatsApp" hint="Le numéro de ta boutique se modifie dans Profil."><input className="ds-input" value={user?.whatsapp ?? ''} readOnly /></Field>
         </div>
-        <Button className="mt-4" onClick={() => toast.success('Compte mis à jour.')}>
-          Enregistrer mes informations
-        </Button>
+        <p className="ds-muted mt-3 text-[12.5px]">La modification des informations du compte n’est pas encore disponible.</p>
       </section>
 
-      <section className="rounded-2xl border border-border bg-card p-4 shadow-soft sm:p-5">
+      <section className="ds-card p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-heading text-sm font-semibold">Abonnement</h3>
-          <Badge variant="outline" className="border-transparent bg-brand-soft text-brand-strong">
-            Plan actuel :{' '}
-            {plans.find((plan) => plan.id === user?.plan)?.name ?? 'Gratuit'}
-          </Badge>
+          <h2 className="ds-title text-[16px]">Abonnement</h2>
+          <Badge tone="accent">Plan actuel : {plans.find((plan) => plan.id === user?.plan)?.name ?? 'Gratuit'}</Badge>
         </div>
-
-        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+        <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-2">
           {plans.map((plan) => {
             const current = user?.plan === plan.id;
             return (
-              <div
-                key={plan.id}
-                className={cn(
-                  'flex flex-col rounded-xl border p-4',
-                  current ? 'border-brand bg-brand-soft/40' : 'border-border'
-                )}>
-                
+              <div key={plan.id} className={cn('flex flex-col rounded-[16px] border p-4')} style={{ borderColor: current ? 'var(--ds-accent)' : 'var(--ds-border)', background: current ? 'var(--ds-accent-soft)' : 'var(--ds-card)' }}>
                 <div className="flex items-center justify-between gap-2">
-                  <h4 className="font-heading text-sm font-semibold">{plan.name}</h4>
-                  {plan.highlight && !current &&
-                  <Badge className="text-[10px]">{plan.highlight}</Badge>
-                  }
+                  <h3 className="ds-title text-[15px]">{plan.name}</h3>
+                  {plan.highlight && !current && <Badge tone="ink">{plan.highlight}</Badge>}
                 </div>
-                <p className="mt-1.5 flex items-baseline gap-1">
-                  <span className="font-heading text-xl font-semibold tracking-[-0.02em]">
-                    {plan.price}
-                  </span>
-                  <span className="text-[11px] text-muted-foreground">{plan.period}</span>
-                </p>
+                <p className="mt-2 flex items-baseline gap-1"><span className="ds-title text-[26px]">{plan.price}</span><span className="ds-muted text-[12px]">{plan.period}</span></p>
                 <ul className="mt-3 flex-1 space-y-1.5">
                   {(plan.id === 'premium' ? plan.features : plan.features.slice(0, 4)).map((feature) =>
-                  <li key={feature} className="flex gap-2 text-xs text-muted-foreground">
-                      <Check className="mt-0.5 size-3.5 shrink-0 text-brand" />
-                      {feature}
-                    </li>
+                  <li key={feature} className="flex gap-2 text-[13px]"><Check className="mt-0.5 size-3.5 shrink-0" style={{ color: 'var(--ds-accent)' }} />{feature}</li>
                   )}
                 </ul>
-                <Button
-                  className="mt-4 w-full"
-                  size="sm"
-                  variant={current ? 'outline' : 'default'}
-                  disabled={current || changingPlan || (plan.id === 'basic' && user?.plan === 'premium')}
-                  onClick={() => {
-                    if (plan.id === 'premium') {
-                      setPremiumDialogOpen(true);
-                      return;
-                    }
-                    setChangingPlan(true);
-                    void setPlan(plan.id)
-                      .then(() => toast.success(`Plan ${plan.name} activé.`))
-                      .catch((error) => {
-                        toast.error(error instanceof Error ? error.message : 'Changement de plan impossible.');
-                      })
-                      .finally(() => setChangingPlan(false));
-                  }}>
-                  
+                <DsButton className="mt-4" block variant={current ? 'outline' : 'primary'} disabled={current || changingPlan || plan.id === 'basic' && user?.plan === 'premium'} onClick={() => choosePlan(plan.id as 'basic' | 'premium', plan.name)}>
                   {current ? 'Plan actuel' : plan.id === 'basic' && user?.plan === 'premium' ? 'Gérer depuis Stripe' : plan.cta}
-                </Button>
+                </DsButton>
               </div>);
-
           })}
         </div>
-
-        {user?.plan === 'premium' && managedByStripe && <Button
-          variant="outline"
-          className="mt-4"
-          onClick={() => void openBillingPortal().catch((error) =>
-            toast.error(error instanceof Error ? error.message : 'Portail de facturation indisponible.')
-          )}>
-          Gérer mon abonnement
-        </Button>}
-        {user?.plan === 'premium' && managedByStripe === false && <p className="mt-3 text-xs text-muted-foreground">
-          Ce plan Premium existait avant la facturation Stripe. Aucun abonnement Stripe n’est associé à cette boutique.
-        </p>}
+        {user?.plan === 'premium' && managedByStripe &&
+        <DsButton variant="outline" className="mt-4" onClick={() => void openBillingPortal().catch((error) => toast.error(error instanceof Error ? error.message : 'Portail de facturation indisponible.'))}>Gérer mon abonnement</DsButton>
+        }
+        {user?.plan === 'premium' && managedByStripe === false &&
+        <p className="ds-muted mt-3 text-[12.5px]">Ce plan Premium existait avant la facturation Stripe. Aucun abonnement Stripe n’est associé à cette boutique.</p>
+        }
       </section>
 
-      <section className="rounded-2xl border border-border bg-card p-4 shadow-soft sm:p-5">
-        <h3 className="font-heading text-sm font-semibold">Notifications</h3>
-        <div className="mt-4 space-y-4">
-          {[
-          {
-            key: 'newOrder' as const,
-            label: 'Nouvelle commande',
-            hint: 'Reçois une alerte dès qu’un client commande.'
-          },
-          {
-            key: 'dailyRecap' as const,
-            label: 'Récapitulatif quotidien',
-            hint: 'Un résumé de tes ventes chaque soir.'
-          },
-          {
-            key: 'tips' as const,
-            label: 'Conseils de vente SELLIA',
-            hint: 'Astuces pour vendre plus sur WhatsApp.'
-          }].
-          map((item) =>
-          <div key={item.key} className="flex items-start gap-3">
-              <div className="min-w-0 flex-1">
-                <Label htmlFor={item.key} className="text-sm">
-                  {item.label}
-                </Label>
-                <p className="mt-0.5 text-xs text-muted-foreground">{item.hint}</p>
-              </div>
-              <Switch
-              id={item.key}
-              checked={notifications[item.key]}
-              onCheckedChange={(checked: boolean) =>
-              setNotifications({ ...notifications, [item.key]: checked })
-              } />
-            
-            </div>
-          )}
+      <section className="ds-card p-4 sm:p-5">
+        <div className="flex items-center justify-between gap-2"><h2 className="ds-title text-[16px]">Notifications</h2><Badge>Bientôt</Badge></div>
+        {notificationItems.map((item) =>
+        <div key={item.key} className="flex items-start gap-3 py-3" style={{ borderTop: '1px solid var(--ds-border)', marginTop: 12 }}>
+            <div className="min-w-0 flex-1"><p className="text-[14px] font-semibold">{item.label}</p><p className="ds-muted mt-0.5 text-[12.5px]">{item.hint}</p></div>
+            <span className="opacity-50"><Toggle label={item.label} checked={false} onChange={() => toast.info('Les notifications arrivent bientôt.')} /></span>
+          </div>
+        )}
+      </section>
+
+      <section className="ds-card p-4 sm:p-5">
+        <h2 className="ds-title text-[16px]">Équipe</h2>
+        <p className="ds-muted mt-1 text-[14px]">Ajoute un employé pour gérer les commandes avec toi. Disponible dans une future option équipe.</p>
+        <DsButton variant="outline" className="mt-3" onClick={() => toast.info('Les comptes employés arrivent bientôt.')}><UserPlus className="size-4" />Inviter un employé</DsButton>
+      </section>
+
+      <section className="rounded-[16px] border p-4 sm:p-5" style={{ borderColor: 'color-mix(in srgb, var(--ds-danger) 30%, transparent)', background: 'var(--ds-card)' }}>
+        <h2 className="ds-title text-[16px]" style={{ color: 'var(--ds-danger)' }}>Zone sensible</h2>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <DsButton variant="outline" onClick={() => { logout(); navigate('/'); }}><LogOut className="size-4" />Se déconnecter</DsButton>
+          <DsButton variant="danger" onClick={() => toast.error('La suppression de boutique n’est pas encore disponible.')}><Trash2 className="size-4" />Supprimer ma boutique</DsButton>
         </div>
       </section>
-
-      <section className="rounded-2xl border border-border bg-card p-4 shadow-soft sm:p-5">
-        <h3 className="font-heading text-sm font-semibold">Équipe</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Ajoute un employé pour gérer les commandes avec toi. Disponible dans une future option équipe.
-        </p>
-        <Button
-          variant="outline"
-          className="mt-3"
-          onClick={() => toast.info('Les comptes employés arrivent bientôt.')}>
-          
-          <UserPlus className="size-4" />
-          Inviter un employé
-        </Button>
-      </section>
-
-      <section className="rounded-2xl border border-destructive/30 bg-card p-4 shadow-soft sm:p-5">
-        <h3 className="font-heading text-sm font-semibold text-destructive">Zone sensible</h3>
-        <Separator className="my-3" />
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button variant="outline" onClick={() => toast.success('Déconnecté (démo).')}>
-            <LogOut className="size-4" />
-            Se déconnecter
-          </Button>
-          <Button
-            variant="outline"
-            className="text-destructive"
-            onClick={() => toast.error('Suppression de compte désactivée dans la démo.')}>
-            
-            <Trash2 className="size-4" />
-            Supprimer ma boutique
-          </Button>
-        </div>
-      </section>
-
-      <PremiumUpgradeDialog
-        open={premiumDialogOpen}
-        context="general"
-        onClose={() => setPremiumDialogOpen(false)}
-      />
+      <PremiumUpgradeDialog open={premiumDialogOpen} context="general" onClose={() => setPremiumDialogOpen(false)} />
     </div>);
-
 }

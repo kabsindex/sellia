@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
 
 interface TagInputProps {
   values: string[];
@@ -31,7 +29,7 @@ export function TagInput({
 
   return (
     <div className="space-y-2">
-      <label htmlFor={id} className="text-sm font-medium">
+      <label htmlFor={id} className="ds-label">
         {label}
       </label>
 
@@ -39,7 +37,7 @@ export function TagInput({
       <ul className="flex flex-wrap gap-1.5">
           {values.map((value) =>
         <li key={value}>
-              <span className="inline-flex items-center gap-1 rounded-lg border border-border bg-secondary px-2 py-1 text-xs font-medium">
+              <span className="inline-flex items-center gap-1 rounded-full border border-[var(--ds-border)] bg-[var(--ds-subtle)] px-2.5 py-1 text-[12.5px] font-medium">
                 {value}
                 <button
               type="button"
@@ -56,7 +54,7 @@ export function TagInput({
       }
 
       <div className="flex gap-2">
-        <Input
+        <input className="ds-input"
           id={id}
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
@@ -68,9 +66,9 @@ export function TagInput({
           }}
           placeholder={placeholder} />
         
-        <Button type="button" variant="outline" size="icon" onClick={() => add(draft)} aria-label="Ajouter">
+        <button type="button" className="ds-icon-btn" onClick={() => add(draft)} aria-label="Ajouter">
           <Plus className="size-4" />
-        </Button>
+        </button>
       </div>
 
       {suggestions.filter((item) => !values.includes(item)).length > 0 &&

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Loader2, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../../utils/cn';
@@ -117,7 +117,7 @@ export function ImagePicker({
 
   return (
     <div>
-      <p className="text-sm font-medium">{label}</p>
+      <p className="ds-label">{label}</p>
       <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
 
       <div
@@ -134,7 +134,7 @@ export function ImagePicker({
         <div
           key={url}
           className={cn(
-            'group relative overflow-hidden rounded-xl border border-border bg-secondary',
+            'group relative overflow-hidden rounded-[14px] border border-[var(--ds-border)] bg-[var(--ds-subtle)]',
             previewAspect
           )}>
           
@@ -164,7 +164,7 @@ export function ImagePicker({
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
           className={cn(
-            'flex flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-border bg-secondary/40 p-2 text-center transition-colors hover:border-brand hover:bg-brand-soft disabled:cursor-wait',
+            'flex flex-col items-center justify-center gap-1 rounded-[14px] border border-dashed border-[var(--ds-border)] bg-[var(--ds-subtle)] p-2 text-center transition-colors hover:border-brand hover:bg-brand-soft disabled:cursor-wait',
             previewAspect
           )}>
             {uploading ? <Loader2 className="size-4 animate-spin text-brand" /> : <Upload className="size-4 text-brand" />}

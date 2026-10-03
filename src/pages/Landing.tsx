@@ -1,55 +1,40 @@
-import React, { Suspense, lazy } from 'react';
+import { Suspense, lazy } from 'react';
 import { MotionConfig } from 'framer-motion';
-import { MarketingNav } from '../components/marketing/MarketingNav';
-import { Hero } from '../components/marketing/Hero';
-import { ProblemSection } from '../components/marketing/ProblemSection';
-import { HowItWorks } from '../components/marketing/HowItWorks';
-import { MobileCtaBar } from '../components/marketing/MobileCtaBar';
-import { Features } from '../components/marketing/Features';
-import { StorePreviewSection } from '../components/marketing/StorePreviewSection';
-import { Pricing } from '../components/marketing/Pricing';
-import { Testimonials } from '../components/marketing/Testimonials';
-import { Faq } from '../components/marketing/Faq';
-import { FinalCta } from '../components/marketing/FinalCta';
-import { MarketingFooter } from '../components/marketing/MarketingFooter';
+import { Nav, MobileCta } from '../components/landing/Nav';
+import { Hero } from '../components/landing/Hero';
+import { Faq, FinalCta, Footer } from '../components/landing/Closing';
+import { Plans } from '../components/landing/Plans';
 
 // Sections animées sous la ligne de flottaison : chargées à part pour garder le hero rapide.
-const LiveDemo = lazy(() => import('../components/marketing/LiveDemo').then((m) => ({ default: m.LiveDemo })));
-const DashboardPreview = lazy(() =>
-import('../components/marketing/DashboardPreview').then((m) => ({ default: m.DashboardPreview }))
-);
-const LinkShare = lazy(() => import('../components/marketing/LinkShare').then((m) => ({ default: m.LinkShare })));
+const ProblemDemo = lazy(() => import('../components/landing/ProblemDemo').then((m) => ({ default: m.ProblemDemo })));
+const ProductDemo = lazy(() => import('../components/landing/ProductDemo').then((m) => ({ default: m.ProductDemo })));
+const Features = lazy(() => import('../components/landing/Features').then((m) => ({ default: m.Features })));
+const StorefrontShowcase = lazy(() => import('../components/landing/Showcases').then((m) => ({ default: m.StorefrontShowcase })));
+const DashboardShowcase = lazy(() => import('../components/landing/Showcases').then((m) => ({ default: m.DashboardShowcase })));
+const LinkShare = lazy(() => import('../components/landing/Showcases').then((m) => ({ default: m.LinkShare })));
 
-const placeholder = (height: string) => <div className={height} aria-hidden="true" />;
+const gap = (height: string) => <div className={height} aria-hidden="true" />;
 
 export function Landing() {
   return (
     // « user » : les animations de transformation sont coupées si l'utilisateur réduit les animations.
     <MotionConfig reducedMotion="user">
-      <div className="min-h-screen w-full bg-background">
-        <MarketingNav />
+      <div className="min-h-screen w-full" style={{ background: 'var(--ds-bg)', color: 'var(--ds-ink)' }}>
+        <Nav />
         <main>
           <Hero />
-          <ProblemSection />
-          <HowItWorks />
-          <Suspense fallback={placeholder('min-h-[720px]')}>
-            <LiveDemo />
-          </Suspense>
-          <Features />
-          <StorePreviewSection />
-          <Suspense fallback={placeholder('min-h-[520px]')}>
-            <DashboardPreview />
-          </Suspense>
-          <Suspense fallback={placeholder('min-h-[420px]')}>
-            <LinkShare />
-          </Suspense>
-          <Pricing />
-          <Testimonials />
+          <Suspense fallback={gap('min-h-[640px]')}><ProblemDemo /></Suspense>
+          <Suspense fallback={gap('min-h-[760px]')}><ProductDemo /></Suspense>
+          <Suspense fallback={gap('min-h-[700px]')}><Features /></Suspense>
+          <Suspense fallback={gap('min-h-[700px]')}><StorefrontShowcase /></Suspense>
+          <Suspense fallback={gap('min-h-[640px]')}><DashboardShowcase /></Suspense>
+          <Suspense fallback={gap('min-h-[360px]')}><LinkShare /></Suspense>
+          <Plans />
           <Faq />
           <FinalCta />
         </main>
-        <MarketingFooter />
-        <MobileCtaBar />
+        <Footer />
+        <MobileCta />
       </div>
     </MotionConfig>);
 }

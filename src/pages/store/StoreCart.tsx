@@ -1,23 +1,28 @@
-import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
-import { ProductImage } from '../../components/shared/ProductImage';
-import { WhatsAppIcon } from '../../components/shared/WhatsAppIcon';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ShoppingBag, Trash2 } from 'lucide-react';
 import { useSellia } from '../../contexts/SelliaContext';
 import { useStoreTheme } from '../../hooks/useStoreTheme';
+import { DsButton, DsLinkButton, EmptyState, IconButton, Stepper } from '../../components/ds';
+import { DesktopTitle, MobileBar } from '../../components/store/StoreParts';
+import { ProductImage } from '../../components/shared/ProductImage';
+import { WhatsAppIcon } from '../../components/shared/WhatsAppIcon';
+import { AnimatedNumber } from '../../components/ds/motion';
+import { themeVars } from '../../design/theme';
 import { getTheme } from '../../utils/themes';
 import { formatPrice } from '../../utils/format';
 import { buildCartMessage, openWhatsApp } from '../../utils/whatsapp';
 
 export function StoreCart() {
   const location = useLocation();
-  const { store, cart, updateCartQuantity, removeCartLine } = useSellia();
+  const { store, cart, updateCartQuantity, removeCartLine, clearCart } = useSellia();
   const storeTheme = useStoreTheme(store.theme);
   const isPremiumDemo = location.pathname.startsWith('/demo/premium/');
   const theme = isPremiumDemo ? getTheme('noir') : storeTheme;
   const basePath = isPremiumDemo ? '/demo/premium' : `/${store.slug}`;
-
   const subtotal = cart.reduce((sum, line) => sum + line.price * line.quantity, 0);
+  const count = cart.reduce((sum, line) => sum + line.quantity, 0);
+  const rootStyle = { ...themeVars(theme), ...(isPremiumDemo ? { minHeight: '100vh' } : {}) };
 
   function orderOnWhatsApp() {
     if (!cart.length) return;
@@ -26,134 +31,73 @@ export function StoreCart() {
 
   if (cart.length === 0) {
     return (
-      <div className="mx-auto w-full max-w-[520px] px-4 py-16 text-center">
-        <span
-          className="mx-auto grid size-14 place-items-center rounded-2xl"
-          style={{ backgroundColor: theme.accentSoft, color: theme.accent }}>
-          <ShoppingBag className="size-5" />
-        </span>
-        <h1 className="mt-4 font-heading text-[20px] font-semibold">Ton panier est vide</h1>
-        <p className="mt-1.5 text-sm" style={{ color: theme.muted }}>
-          Ajoute des produits puis envoie directement ta commande au vendeur sur WhatsApp.
-        </p>
-        <Link
-          to={`${basePath}/catalogue`}
-          className="mt-5 inline-flex h-11 items-center rounded-full px-5 text-sm font-semibold"
-          style={{ backgroundColor: theme.accent, color: theme.accentText }}>
-          Voir le catalogue
-        </Link>
-      </div>
-    );
+      <div className="mx-auto w-full max-w-[1200px]" style={rootStyle}>
+        <MobileBar title="Mon panier" />
+        <EmptyState icon={ShoppingBag} title="Ton panier est vide" text="Ajoute des produits, puis envoie ta commande au vendeur directement sur WhatsApp.">
+          <DsLinkButton to={`${basePath}/catalogue`}>Voir le catalogue</DsLinkButton>
+        </EmptyState>
+      </div>);
   }
 
+  const summary =
+  <div className="ds-card p-4 lg:p-5">
+      <h2 className="ds-title text-[17px]">Résumé</h2>
+      <dl className="mt-3 space-y-2 text-[14px]">
+        <div className="flex justify-between"><dt className="ds-muted">Sous-total ({count} article{count > 1 ? 's' : ''})</dt><dd className="font-medium tabular-nums">{formatPrice(subtotal, store.currency)}</dd></div>
+        <div className="flex justify-between"><dt className="ds-muted">Livraison</dt><dd className="font-medium">À confirmer</dd></div>
+        <div className="ds-divider my-1" />
+        <div className="flex items-baseline justify-between"><dt className="font-semibold">Total</dt><dd className="ds-title text-[22px]"><AnimatedNumber value={subtotal} suffix={store.currency} /></dd></div>
+      </dl>
+      <DsButton block size="lg" className="mt-4 hidden lg:inline-flex" onClick={orderOnWhatsApp}>
+        <WhatsAppIcon className="size-5" />Commander sur WhatsApp
+      </DsButton>
+      <p className="ds-muted mt-3 text-center text-[12px] leading-relaxed">Le message de commande est prérempli. Livraison et paiement se règlent avec le vendeur.</p>
+    </div>;
+
   return (
-    <div className="mx-auto w-full max-w-[760px] px-4 py-6">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: theme.muted }}>SELLIA</p>
-          <h1 className="mt-1 font-heading text-[24px] font-semibold tracking-[-0.03em]">Mon panier</h1>
-        </div>
-        <span className="text-xs" style={{ color: theme.muted }}>
-          {cart.length} article{cart.length > 1 ? 's' : ''}
-        </span>
+    <div className="mx-auto w-full max-w-[1200px] pb-[112px] lg:px-6 lg:pb-12 lg:pt-6" style={rootStyle}>
+      <MobileBar title="Mon panier" right={<IconButton label="Vider le panier" small onClick={() => window.confirm('Vider tout le panier ?') && clearCart()}><Trash2 className="size-4" /></IconButton>} />
+      <DesktopTitle title="Mon panier" hint={`${count} article${count > 1 ? 's' : ''} de ${store.name}`} />
+      <div className="px-4 lg:grid lg:grid-cols-[1fr_380px] lg:items-start lg:gap-8 lg:px-0">
+        <ul className="space-y-3">
+          <AnimatePresence initial={false}>
+            {cart.map((line) =>
+            <motion.li
+              key={line.lineId}
+              layout
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: -40, height: 0, marginBottom: 0 }}
+              transition={{ duration: 0.24 }}
+              className="ds-card flex gap-3 p-3">
+                <Link to={`${basePath}/catalogue`} className="size-[84px] shrink-0 overflow-hidden rounded-[14px]" style={{ background: 'var(--ds-subtle)' }} aria-hidden="true" tabIndex={-1}>
+                  <ProductImage src={line.image} alt="" className="bg-transparent" imageClassName="p-1.5" />
+                </Link>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="line-clamp-2 text-[14px] font-semibold leading-snug">{line.name}</p>
+                      {(line.size || line.color) && <p className="ds-muted mt-0.5 text-[12px]">{[line.color, line.size].filter(Boolean).join(' · ')}</p>}
+                    </div>
+                    <IconButton label={`Retirer ${line.name}`} small className="!border-transparent !shadow-none" onClick={() => removeCartLine(line.lineId)}><Trash2 className="size-4" style={{ color: 'var(--ds-danger)' }} /></IconButton>
+                  </div>
+                  <div className="mt-auto flex items-end justify-between pt-2">
+                    <p className="ds-price text-[15px]">{formatPrice(line.price * line.quantity, store.currency)}</p>
+                    <Stepper value={line.quantity} onChange={(value) => updateCartQuantity(line.lineId, value)} min={0} />
+                  </div>
+                </div>
+              </motion.li>
+            )}
+          </AnimatePresence>
+        </ul>
+        <div className="mt-5 lg:sticky lg:top-24 lg:mt-0">{summary}</div>
       </div>
 
-      <ul className="mt-5 space-y-3">
-        {cart.map((line) =>
-        <li
-          key={line.lineId}
-          className="flex gap-3 rounded-[20px] p-3"
-          style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}>
-          <span
-            className="size-20 shrink-0 overflow-hidden rounded-2xl"
-            style={{ backgroundColor: theme.surface, border: `1px solid ${theme.border}` }}>
-            <ProductImage src={line.image} alt="" imageClassName="p-1.5" />
-          </span>
-
-          <div className="flex min-w-0 flex-1 flex-col">
-            <div className="flex items-start gap-2">
-              <p className="min-w-0 flex-1 text-sm font-semibold leading-snug">{line.name}</p>
-              <button
-                type="button"
-                onClick={() => removeCartLine(line.lineId)}
-                aria-label={`Retirer ${line.name}`}
-                className="grid size-8 place-items-center rounded-full"
-                style={{ color: theme.muted }}>
-                <Trash2 className="size-4" />
-              </button>
-            </div>
-
-            <p className="mt-0.5 text-xs" style={{ color: theme.muted }}>
-              {[line.size && `Taille ${line.size}`, line.color].filter(Boolean).join(' · ') || 'Taille unique'}
-            </p>
-
-            <div className="mt-auto flex items-center justify-between gap-3 pt-2">
-              <div
-                className="inline-flex items-center rounded-full"
-                style={{ backgroundColor: theme.surface, border: `1px solid ${theme.border}` }}>
-                <button
-                  type="button"
-                  onClick={() => updateCartQuantity(line.lineId, line.quantity - 1)}
-                  className="grid size-8 place-items-center"
-                  aria-label="Diminuer la quantité">
-                  <Minus className="size-3.5" />
-                </button>
-                <span className="w-8 text-center text-sm font-semibold">{line.quantity}</span>
-                <button
-                  type="button"
-                  onClick={() => updateCartQuantity(line.lineId, line.quantity + 1)}
-                  className="grid size-8 place-items-center"
-                  aria-label="Augmenter la quantité">
-                  <Plus className="size-3.5" />
-                </button>
-              </div>
-              <span className="text-sm font-semibold" style={{ color: theme.accent }}>
-                {formatPrice(line.price * line.quantity, store.currency)}
-              </span>
-            </div>
-          </div>
-        </li>
-        )}
-      </ul>
-
-      <section
-        className="mt-5 rounded-[22px] p-4"
-        style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}>
-        <dl className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <dt style={{ color: theme.muted }}>Sous-total</dt>
-            <dd>{formatPrice(subtotal, store.currency)}</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt style={{ color: theme.muted }}>Livraison</dt>
-            <dd>À convenir sur WhatsApp</dd>
-          </div>
-          <div className="flex justify-between pt-3 text-base font-semibold" style={{ borderTop: `1px solid ${theme.border}` }}>
-            <dt>Total</dt>
-            <dd style={{ color: theme.accent }}>{formatPrice(subtotal, store.currency)}</dd>
-          </div>
-        </dl>
-
-        <button
-          type="button"
-          onClick={orderOnWhatsApp}
-          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl text-sm font-semibold"
-          style={{ backgroundColor: theme.accent, color: theme.accentText }}>
-          <WhatsAppIcon className="size-4.5" />
-          Commander sur WhatsApp
-        </button>
-
-        <p className="mt-2 text-center text-[11px]" style={{ color: theme.muted }}>
-          Aucun paiement n’est effectué sur SELLIA
-        </p>
-
-        <Link
-          to={`${basePath}/catalogue`}
-          className="mt-3 block text-center text-xs font-medium"
-          style={{ color: theme.muted }}>
-          Continuer mes achats
-        </Link>
-      </section>
-    </div>
-  );
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl lg:hidden" style={{ ...themeVars(theme), background: 'color-mix(in srgb, var(--ds-card) 95%, transparent)', borderColor: 'var(--ds-border)' }}>
+        <DsButton block size="lg" onClick={orderOnWhatsApp}>
+          <WhatsAppIcon className="size-5" />
+          Commander sur WhatsApp · {formatPrice(subtotal, store.currency)}
+        </DsButton>
+      </div>
+    </div>);
 }
