@@ -40,3 +40,5 @@ jobs:
           git rm .sellia-refonte-final.bz2.b64 .github/workflows/apply-sellia-refonte.yml
           git commit -m "chore: remove refonte staging files"
           git push origin HEAD:feat/sellia-refonte-complete-final
+
+# retry after staged patch integrity repair
