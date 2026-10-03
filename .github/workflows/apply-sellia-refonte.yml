@@ -1,0 +1,42 @@
+name: Apply SELLIA refonte patch
+
+on:
+  push:
+    branches:
+      - feat/sellia-refonte-complete-final
+    paths:
+      - '.github/workflows/apply-sellia-refonte.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/sellia-refonte-complete-final
+          fetch-depth: 0
+
+      - name: Apply cumulative SELLIA patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          base64 -d .sellia-refonte-final.bz2.b64 > /tmp/sellia-refonte.patch.bz2
+          bzip2 -dc /tmp/sellia-refonte.patch.bz2 > /tmp/sellia-refonte.patch
+
+          if ! git am --3way /tmp/sellia-refonte.patch; then
+            git status --short
+            git am --abort || true
+            echo "PATCH_APPLY_FAILED"
+            exit 1
+          fi
+
+          git rm .sellia-refonte-final.bz2.b64 .github/workflows/apply-sellia-refonte.yml
+          git commit -m "chore: remove refonte staging files"
+          git push origin HEAD:feat/sellia-refonte-complete-final
