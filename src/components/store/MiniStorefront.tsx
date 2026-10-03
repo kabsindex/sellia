@@ -62,7 +62,7 @@ function TabBar({ active, cartCount }: {active: number;cartCount: number;}) {
 function MiniCard({ product, added, favorite, fresh, currency }: {product: Product;added: boolean;favorite: boolean;fresh: boolean;currency: string;}) {
   const discount = discountPercent(product.price, product.oldPrice);
   return (
-    <motion.div layout initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={spring} className="ds-card relative overflow-hidden !rounded-[11px]" style={fresh ? { borderColor: 'var(--ds-accent)', boxShadow: '0 0 0 2px color-mix(in srgb, var(--ds-accent) 25%, transparent)' } : undefined}>
+    <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={spring} className="ds-card relative overflow-hidden !rounded-[11px]" style={fresh ? { borderColor: 'var(--ds-accent)', boxShadow: '0 0 0 2px color-mix(in srgb, var(--ds-accent) 25%, transparent)' } : undefined}>
       <div className="relative aspect-[1/0.92]" style={{ background: 'var(--ds-subtle)' }}>
         <ProductImage src={product.images[0]} alt="" className="bg-transparent" imageClassName="p-1.5" />
         {(discount || fresh) && <span className="absolute left-1 top-1 rounded-[5px] px-1 py-px text-[6.5px] font-bold" style={fresh ? { background: 'var(--ds-accent)', color: 'var(--ds-accent-fg)' } : { background: 'var(--ds-danger-soft)', color: 'var(--ds-danger)' }}>{fresh ? 'NOUVEAU' : `-${discount}%`}</span>}
@@ -128,8 +128,8 @@ function ProductView({ store, focus, addedIds = [] }: MiniStorefrontProps) {
     <>
       <div className="relative h-[190px] shrink-0" style={{ background: 'var(--ds-subtle)' }}>
         <ProductImage src={focus.images[0]} alt="" className="bg-transparent" imageClassName="p-5" />
-        <span className="absolute left-2.5 top-6 grid size-[22px] place-items-center rounded-full bg-white/95"><ArrowLeft className="size-[10px] text-[#0f1a15]" /></span>
-        <span className="absolute right-2.5 top-6 grid size-[22px] place-items-center rounded-full bg-white/95"><Heart className="size-[10px] text-[#0f1a15]" /></span>
+        <span className="absolute left-2.5 top-9 grid size-[22px] place-items-center rounded-full bg-white/95"><ArrowLeft className="size-[10px] text-[#0f1a15]" /></span>
+        <span className="absolute right-2.5 top-9 grid size-[22px] place-items-center rounded-full bg-white/95"><Heart className="size-[10px] text-[#0f1a15]" /></span>
       </div>
       <div className="relative -mt-3 flex-1 overflow-hidden rounded-t-[16px] px-3 pt-3" style={{ background: 'var(--ds-bg)' }}>
         <p className="text-[11px] font-bold leading-tight">{focus.name}</p>
@@ -147,11 +147,11 @@ function CartView({ store, lines = [], cartReady = true }: MiniStorefrontProps) 
   const total = lines.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
   return (
     <>
-      <div className="flex-1 overflow-hidden px-3 pt-6">
+      <div className="flex-1 overflow-hidden px-3 pt-9">
         <p className="text-center text-[10px] font-bold">Mon panier</p>
         <div className="mt-2.5 space-y-1.5">
           {lines.map((line) =>
-          <motion.div key={line.product.id} layout initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="ds-card flex gap-2 !rounded-[11px] p-1.5">
+          <motion.div key={line.product.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="ds-card flex gap-2 !rounded-[11px] p-1.5">
               <span className="size-[38px] shrink-0 overflow-hidden rounded-[8px]" style={{ background: 'var(--ds-subtle)' }}><ProductImage src={line.product.images[0]} alt="" className="bg-transparent" imageClassName="p-1" /></span>
               <div className="min-w-0 flex-1"><p className="truncate text-[8.5px] font-semibold">{line.product.name}</p><p className="mt-0.5 text-[9px] font-bold">{formatPrice(line.product.price * line.quantity, store.currency)}</p></div>
               <span className="self-end rounded-[6px] border px-1.5 py-0.5 text-[8px] font-semibold" style={{ borderColor: 'var(--ds-border)' }}>× {line.quantity}</span>
