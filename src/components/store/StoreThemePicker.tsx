@@ -1,4 +1,3 @@
-import React from 'react';
 import { Check, Crown, LockKeyhole, Search, ShoppingBag, Store as StoreIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { storeThemes } from '../../utils/themes';

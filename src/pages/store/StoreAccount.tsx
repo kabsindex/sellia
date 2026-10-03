@@ -1,143 +1,129 @@
-import React from 'react';
-import { CheckCircle2, MapPin, Package, Share2, ShieldCheck, Tags } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { ArrowLeft, BadgeCheck, Link2, MapPin, Share2 } from 'lucide-react';
 import { SiFacebook, SiInstagram, SiTiktok } from 'react-icons/si';
-import { WhatsAppIcon } from '../../components/shared/WhatsAppIcon';
+import { toast } from 'sonner';
 import { useSellia } from '../../contexts/SelliaContext';
 import { useStoreTheme } from '../../hooks/useStoreTheme';
+import { useLiveProducts } from '../../hooks/useLiveProducts';
+import { ProductCard } from '../../components/store/ProductCard';
+import { DsButton, IconButton } from '../../components/ds';
+import { WhatsAppIcon } from '../../components/shared/WhatsAppIcon';
 import { openWhatsApp, storeUrl } from '../../utils/whatsapp';
 
-export function StoreAccount() {
-  const { store, products, categories } = useSellia();
-  const theme = useStoreTheme(store.theme);
-  const liveProducts = products.filter((product) => !product.hidden);
-  const cover = store.coverMobile || store.cover;
-  const socials = [
-    { icon: SiInstagram, label: 'Instagram', value: store.instagram },
-    { icon: SiTiktok, label: 'TikTok', value: store.tiktok },
-    { icon: SiFacebook, label: 'Facebook', value: store.facebook }
-  ].filter((item) => item.value);
+type Tab = 'produits' | 'apropos';
 
-  function shareStore() {
+/** Profil de la boutique : identité, contact WhatsApp, produits et informations pratiques. */
+export function StoreAccount({ initialTab = 'produits' }: {initialTab?: Tab;}) {
+  const { store, categories } = useSellia();
+  const theme = useStoreTheme(store.theme);
+  const navigate = useNavigate();
+  const live = useLiveProducts();
+  const [tab, setTab] = useState<Tab>(initialTab);
+  const cover = store.coverMobile || store.cover;
+  const verified = store.plan === 'premium' && store.verificationStatus === 'verified';
+  const address = [store.address, store.city, store.country].filter(Boolean).join(', ');
+  const socials = [
+  { icon: SiInstagram, label: 'Instagram', handle: store.instagram },
+  { icon: SiTiktok, label: 'TikTok', handle: store.tiktok },
+  { icon: SiFacebook, label: 'Facebook', handle: store.facebook }].
+  filter((item) => item.handle);
+
+  function share() {
     const url = storeUrl(store);
     if (navigator.share) {
-      void navigator.share({ title: store.name, text: store.description, url }).catch(() => undefined);
+      void navigator.share({ title: store.name, url }).catch(() => undefined);
       return;
     }
     void navigator.clipboard?.writeText(url);
+    toast.success('Lien de la boutique copié.');
+  }
+
+  function contact() {
+    openWhatsApp(store.whatsapp, `Bonjour ${store.name} 👋 Je vous contacte depuis votre boutique en ligne.`);
   }
 
   return (
-    <div className="mx-auto w-full max-w-[760px] px-4 py-5">
-      <section
-        className="overflow-hidden rounded-[24px]"
-        style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}>
-        <div className="relative h-36 overflow-hidden sm:h-44" style={{ backgroundColor: theme.accentSoft }}>
-          {cover &&
-          <img src={cover} alt="" className="size-full object-cover" />
-          }
-          <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
-          <p className="absolute left-4 top-4 rounded-full bg-black/35 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white backdrop-blur">
-            Profil boutique
-          </p>
+    <div className="mx-auto w-full max-w-[1200px] pb-8 lg:px-6 lg:pt-6">
+      <div className="relative h-[148px] overflow-hidden lg:h-[240px] lg:rounded-[28px]" style={{ background: 'var(--ds-accent)' }}>
+        {cover && <img src={cover} alt="" className="size-full object-cover" />}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0) 55%)' }} />
+        <div className="absolute inset-x-0 top-0 flex justify-between p-4 lg:hidden" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
+          <IconButton label="Retour" glass onClick={() => navigate(-1)}><ArrowLeft className="size-[18px]" /></IconButton>
+          <IconButton label="Partager la boutique" glass onClick={share}><Share2 className="size-[17px]" /></IconButton>
+        </div>
+      </div>
+
+      <div className="px-4 lg:px-2">
+        <div className="-mt-10 flex items-end gap-3.5">
+          <span className="grid size-[84px] shrink-0 place-items-center overflow-hidden rounded-full lg:size-[104px]" style={{ background: 'var(--ds-card)', boxShadow: '0 0 0 4px var(--ds-bg), var(--ds-shadow-sm)' }}>
+            {store.logo ? <img src={store.logo} alt="" className="size-full object-contain p-1.5" /> : <span className="text-2xl font-bold" style={{ color: 'var(--ds-accent)' }}>{store.name.slice(0, 1)}</span>}
+          </span>
+          <div className="min-w-0 pb-1">
+            <h1 className="ds-title flex items-center gap-1.5 text-[20px] lg:text-[26px]"><span className="truncate">{store.name}</span>{verified && <BadgeCheck className="size-5 shrink-0" style={{ color: 'var(--ds-accent)' }} aria-label="Boutique vérifiée" />}</h1>
+            <p className="ds-muted truncate text-[13px]">{store.category}{store.city ? ` · ${store.city}` : ''}</p>
+          </div>
         </div>
 
-        <div className="relative px-4 pb-5">
-          <div className="-mt-10 flex items-end justify-between gap-3">
-            <div
-              className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-full border-4"
-              style={{ backgroundColor: theme.card, borderColor: theme.card }}>
-              {store.logo ?
-              <img src={store.logo} alt="" className="size-full object-contain" /> :
-              <span className="text-2xl font-bold" style={{ color: theme.accent }}>
-                {store.name.slice(0, 1).toUpperCase()}
-              </span>
-              }
-            </div>
-            <button
-              type="button"
-              onClick={shareStore}
-              className="mb-1 grid size-10 place-items-center rounded-full"
-              style={{ border: `1px solid ${theme.border}`, color: theme.text }}
-              aria-label="Partager la boutique">
-              <Share2 className="size-4" />
+        <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-[16px] text-center" style={{ background: 'var(--ds-border)', border: '1px solid var(--ds-border)' }}>
+          <div className="py-3" style={{ background: 'var(--ds-card)' }}><dd className="ds-title text-[18px]">{live.length}</dd><dt className="ds-muted text-[12px]">Produit{live.length > 1 ? 's' : ''}</dt></div>
+          <div className="py-3" style={{ background: 'var(--ds-card)' }}><dd className="ds-title text-[18px]">{categories.length}</dd><dt className="ds-muted text-[12px]">Catégorie{categories.length > 1 ? 's' : ''}</dt></div>
+        </dl>
+
+        {store.description && <p className="mt-4 text-[14px] leading-relaxed" style={{ color: 'var(--ds-muted)' }}>{store.description}</p>}
+
+        <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] gap-2.5 lg:max-w-[460px]">
+          <DsButton size="lg" onClick={contact}><WhatsAppIcon className="size-5" /><span className="sm:hidden">WhatsApp</span><span className="hidden sm:inline">Écrire sur WhatsApp</span></DsButton>
+          <DsButton size="lg" variant="outline" onClick={share} aria-label="Partager la boutique"><Share2 className="size-[18px]" /><span className="hidden sm:inline">Partager</span></DsButton>
+        </div>
+
+        <div role="tablist" className="relative mt-6 grid grid-cols-2 border-b" style={{ borderColor: 'var(--ds-border)' }}>
+          {([['produits', 'Produits'], ['apropos', 'À propos']] as [Tab, string][]).map(([id, label]) =>
+          <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className="relative h-11 text-[14px] font-semibold" style={{ color: tab === id ? 'var(--ds-accent-strong)' : 'var(--ds-muted)' }}>
+              {label}
+              {tab === id && <motion.span layoutId="profile-tab" className="absolute inset-x-6 bottom-[-1px] h-0.5 rounded-full" style={{ background: 'var(--ds-accent)' }} />}
             </button>
-          </div>
-
-          <div className="mt-3 flex items-center gap-2">
-            <h1 className="font-heading text-[22px] font-semibold tracking-[-0.03em]">{store.name}</h1>
-            {store.plan === 'premium' && store.verificationStatus === 'verified' &&
-            <ShieldCheck className="size-5 shrink-0" style={{ color: theme.accent }} />
-            }
-          </div>
-          <p className="mt-1 text-sm" style={{ color: theme.muted }}>{store.category}</p>
-          <p className="mt-3 text-sm leading-relaxed" style={{ color: theme.muted }}>{store.description}</p>
-
-          <div className="mt-5 grid grid-cols-3 divide-x" style={{ borderColor: theme.border }}>
-            <div className="text-center">
-              <p className="text-lg font-semibold">{liveProducts.length}</p>
-              <p className="text-[10px] uppercase tracking-[0.08em]" style={{ color: theme.muted }}>Produits</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-semibold">{categories.length}</p>
-              <p className="text-[10px] uppercase tracking-[0.08em]" style={{ color: theme.muted }}>Catégories</p>
-            </div>
-            <div className="text-center">
-              <p className="inline-flex items-center gap-1 text-sm font-semibold">
-                <CheckCircle2 className="size-4" style={{ color: theme.accent }} />
-                Active
-              </p>
-              <p className="text-[10px] uppercase tracking-[0.08em]" style={{ color: theme.muted }}>Boutique</p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => openWhatsApp(store.whatsapp, `Bonjour 👋 J'ai une question sur ${store.name} (${storeUrl(store)}).`)}
-            className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-2xl text-sm font-semibold"
-            style={{ backgroundColor: theme.accent, color: theme.accentText }}>
-            <WhatsAppIcon className="size-4.5" />
-            Contacter sur WhatsApp
-          </button>
-        </div>
-      </section>
-
-      <section className="mt-5 grid gap-3">
-        {[
-          { icon: Package, label: 'Catalogue', value: `${liveProducts.length} produits disponibles` },
-          { icon: Tags, label: 'Catégories', value: `${categories.length} catégories` },
-          { icon: MapPin, label: 'Localisation', value: [store.address, store.city, store.country].filter(Boolean).join(', ') || 'À demander au vendeur' }
-        ].map((item) =>
-        <div
-          key={item.label}
-          className="flex items-start gap-3 rounded-2xl p-4"
-          style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}>
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl" style={{ backgroundColor: theme.accentSoft, color: theme.accent }}>
-            <item.icon className="size-4.5" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-xs" style={{ color: theme.muted }}>{item.label}</p>
-            <p className="mt-0.5 text-sm font-medium">{item.value}</p>
-          </div>
-        </div>
-        )}
-      </section>
-
-      {socials.length > 0 &&
-      <section className="mt-5">
-        <h2 className="text-sm font-semibold">Réseaux sociaux</h2>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {socials.map((item) =>
-          <span
-            key={item.label}
-            className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium"
-            style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}>
-            <item.icon className="size-3.5" style={{ color: theme.accent }} />
-            @{item.value}
-          </span>
           )}
         </div>
-      </section>
-      }
-    </div>
-  );
+
+        {tab === 'produits' ?
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
+            {live.map((product) => <ProductCard key={product.id} product={product} store={store} theme={theme} layout="grid" />)}
+            {live.length === 0 && <p className="ds-muted col-span-full py-10 text-center text-[14px]">Aucun produit pour le moment.</p>}
+          </div> :
+
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+            <div className="ds-card divide-y p-1" style={{ borderColor: 'var(--ds-border)' }}>
+              <button type="button" onClick={contact} className="flex w-full items-center gap-3 px-3 py-3 text-left">
+                <span className="grid size-9 place-items-center rounded-full" style={{ background: 'var(--ds-accent-soft)', color: 'var(--ds-accent-strong)' }}><WhatsAppIcon className="size-[18px]" /></span>
+                <span className="min-w-0"><span className="block text-[12px] ds-muted">WhatsApp</span><span className="block truncate text-[14px] font-medium">{store.whatsapp}</span></span>
+              </button>
+              {address &&
+            <div className="flex items-center gap-3 px-3 py-3">
+                  <span className="grid size-9 place-items-center rounded-full" style={{ background: 'var(--ds-subtle)' }}><MapPin className="size-[18px]" /></span>
+                  <span className="min-w-0"><span className="block text-[12px] ds-muted">Adresse</span><span className="block text-[14px] font-medium">{address}</span></span>
+                </div>
+            }
+              <div className="flex items-center gap-3 px-3 py-3">
+                <span className="grid size-9 place-items-center rounded-full" style={{ background: 'var(--ds-subtle)' }}><Link2 className="size-[18px]" /></span>
+                <span className="min-w-0"><span className="block text-[12px] ds-muted">Lien de la boutique</span><span className="block truncate font-mono text-[13px]">{storeUrl(store)}</span></span>
+              </div>
+            </div>
+            {socials.length > 0 &&
+          <div className="ds-card p-4">
+                <p className="text-[14px] font-semibold">Suivre {store.name}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {socials.map((item) =>
+              <span key={item.label} className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-[13px]" style={{ border: '1px solid var(--ds-border)' }}>
+                      <item.icon className="size-4" />{item.handle}
+                    </span>
+              )}
+                </div>
+              </div>
+          }
+          </div>
+        }
+      </div>
+    </div>);
 }
