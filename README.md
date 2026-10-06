@@ -138,9 +138,15 @@ Pull Request correspondante :
 
 Cette branche doit être utilisée comme **source de vérité visuelle** pour comprendre le nouveau SELLIA.
 
-Les interfaces présentes dans le code doivent être privilégiées comme référence plutôt que d'inventer un autre langage visuel.
+Pour toute production visuelle, il faut se baser d'abord sur les **vraies interfaces du produit** :
 
-Des composants comme `MiniStorefront` reproduisent volontairement le Storefront réel afin de garder une cohérence entre démonstrations marketing et produit.
+- les pages Storefront réellement utilisées par les clients ;
+- les pages Dashboard réellement utilisées par les vendeurs ;
+- les composants partagés du design system.
+
+Les anciennes démonstrations animées de la landing (cartes, séquences de parcours, mockups marketing et showcases) ont été retirées et ne doivent plus servir de référence visuelle.
+
+Ne pas reconstruire la vidéo à partir d'anciens composants marketing supprimés. La référence doit rester le produit réel : Storefront + Dashboard + design system.
 
 ---
 
