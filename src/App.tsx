@@ -25,6 +25,7 @@ import { Settings } from './pages/dashboard/Settings';
 import { StorefrontLayout } from './components/layout/StorefrontLayout';
 import { StoreHome } from './pages/store/StoreHome';
 import { StoreCatalog } from './pages/store/StoreCatalog';
+import { StoreSearch } from './pages/store/StoreSearch';
 import { StoreProductDetail } from './pages/store/StoreProductDetail';
 import { StoreCart } from './pages/store/StoreCart';
 import { StoreContact } from './pages/store/StoreContact';
@@ -125,6 +126,7 @@ export function App({
           <Route path="/:slug" element={<StorefrontLayout />}>
             <Route index element={<StoreHome />} />
             <Route path="catalogue" element={<StoreCatalog />} />
+            <Route path="recherche" element={<StoreSearch />} />
             <Route path="produit/:productSlug" element={<StoreProductDetail />} />
             <Route path="panier" element={<StoreCart />} />
             <Route path="commande" element={<Navigate to="../panier" replace />} />

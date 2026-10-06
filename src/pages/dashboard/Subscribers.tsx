@@ -163,11 +163,11 @@ export function Subscribers() {
   }
 
   return (
-    <div className="space-y-5 pb-6">
+    <div className="mx-auto w-full max-w-[860px] space-y-4 pb-24 lg:pb-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold">Abonnés e-mail</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h2 className="ds-title text-[22px] lg:text-[26px]">Abonnés e-mail</h2>
+          <p className="mt-1 text-sm ds-muted">
             {confirmedCount} abonné{confirmedCount > 1 ? 's' : ''} confirmé{confirmedCount > 1 ? 's' : ''} à {store.name}.
           </p>
         </div>
@@ -176,50 +176,50 @@ export function Subscribers() {
             type="button"
             onClick={() => setReloadKey((current) => current + 1)}
             disabled={loading}
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium disabled:opacity-50">
+            className="ds-btn ds-btn--outline ds-btn--sm">
             <RefreshCw className="size-4" /> Actualiser
           </button>
           <button
             type="button"
             onClick={exportCsv}
             disabled={exportable.length === 0}
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium disabled:opacity-50">
+            className="ds-btn ds-btn--outline ds-btn--sm">
             <Download className="size-4" /> Exporter CSV
           </button>
         </div>
       </div>
 
       <div className="relative max-w-[360px]">
-        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 ds-muted" />
         <input
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Rechercher une adresse"
           aria-label="Rechercher un abonné"
-          className="h-10 w-full rounded-lg border border-border bg-card pl-10 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand" />
+          className="ds-input !pl-10" />
       </div>
 
       {store.plan !== 'premium' &&
-        <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
+        <p className="ds-card p-4 text-sm ds-muted">
           Les nouvelles inscriptions sont disponibles pour les boutiques Premium.
         </p>}
 
-      <section className="border-y border-border py-5">
+      <section className="ds-card p-4 sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h3 className="text-base font-semibold">Créer une campagne</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Les adresses en attente de confirmation ne recevront rien.</p>
+            <h3 className="ds-title text-[16px]">Créer une campagne</h3>
+            <p className="mt-1 text-sm ds-muted">Les adresses en attente de confirmation ne recevront rien.</p>
           </div>
-          <span className="text-sm font-medium text-muted-foreground">{confirmedCount} destinataire{confirmedCount > 1 ? 's' : ''}</span>
+          <span className="text-sm font-medium ds-muted">{confirmedCount} destinataire{confirmedCount > 1 ? 's' : ''}</span>
         </div>
         {!store.newsletterAvailable &&
-          <p role="status" className="mt-4 border-l-2 border-amber-500 pl-3 text-sm text-muted-foreground">
+          <p role="status" className="mt-4 border-l-2 border-amber-500 pl-3 text-sm ds-muted">
             L'envoi d'e-mails n'est pas configuré pour cette boutique.
           </p>}
         <div className="mt-5 space-y-4">
           <div>
-            <label htmlFor="campaign-subject" className="mb-1.5 block text-sm font-medium">Objet</label>
+            <label htmlFor="campaign-subject" className="ds-label">Objet</label>
             <input
               id="campaign-subject"
               value={subject}
@@ -227,10 +227,10 @@ export function Subscribers() {
               maxLength={180}
               disabled={!store.newsletterAvailable}
               placeholder="Les nouveautés de la semaine"
-              className="h-11 w-full rounded-lg border border-border bg-card px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50" />
+              className="ds-input disabled:opacity-50" />
           </div>
           <div>
-            <label htmlFor="campaign-body" className="mb-1.5 block text-sm font-medium">Message</label>
+            <label htmlFor="campaign-body" className="ds-label">Message</label>
             <textarea
               id="campaign-body"
               value={body}
@@ -239,14 +239,14 @@ export function Subscribers() {
               rows={6}
               disabled={!store.newsletterAvailable}
               placeholder="Présente tes nouveaux produits et tes offres..."
-              className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50" />
+              className="ds-input ds-textarea disabled:opacity-50" />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={sendTest}
               disabled={!store.newsletterAvailable || !campaignValid || testing}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium disabled:opacity-50">
+              className="ds-btn ds-btn--outline ds-btn--sm">
               <Mail className="size-4" /> {testing ? 'Envoi du test...' : "M'envoyer un test"}
             </button>
             {!confirmSend ?
@@ -254,63 +254,63 @@ export function Subscribers() {
                 type="button"
                 onClick={() => setConfirmSend(true)}
                 disabled={!store.newsletterAvailable || !campaignValid || confirmedCount === 0 || campaignBusy}
-                className="inline-flex h-10 items-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-white disabled:opacity-50">
+                className="ds-btn ds-btn--primary">
                 <Send className="size-4" /> Envoyer aux abonnés
               </button> :
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span>Envoyer à {confirmedCount} abonné{confirmedCount > 1 ? 's' : ''} ?</span>
-                <button type="button" onClick={sendCampaign} disabled={sending || campaignBusy} className="h-10 rounded-lg bg-brand px-4 font-semibold text-white disabled:opacity-50">{sending ? 'Envoi...' : 'Confirmer l’envoi'}</button>
-                <button type="button" onClick={() => setConfirmSend(false)} className="h-10 rounded-lg border border-border px-3">Annuler</button>
+                <button type="button" onClick={sendCampaign} disabled={sending || campaignBusy} className="ds-btn ds-btn--primary">{sending ? 'Envoi...' : 'Confirmer l’envoi'}</button>
+                <button type="button" onClick={() => setConfirmSend(false)} className="ds-btn ds-btn--outline">Annuler</button>
               </div>}
           </div>
-          {user?.email && <p className="text-xs text-muted-foreground">Le test est envoyé à {user.email}.</p>}
+          {user?.email && <p className="text-xs ds-muted">Le test est envoyé à {user.email}.</p>}
         </div>
       </section>
 
       <section>
-        <h3 className="text-base font-semibold">Envois récents</h3>
+        <h3 className="ds-title text-[16px]">Envois récents</h3>
         {campaigns.length === 0 ?
-          <p className="mt-3 text-sm text-muted-foreground">Aucune campagne envoyée.</p> :
-          <ul className="mt-3 divide-y divide-border border-y border-border">
+          <p className="mt-3 text-sm ds-muted">Aucune campagne envoyée.</p> :
+          <ul className="mt-3 ds-card divide-y divide-[var(--ds-border)] overflow-hidden px-4">
             {campaigns.map((campaign) =>
               <li key={campaign.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
                 <div className="min-w-0">
                   <p className="truncate font-medium">{campaign.subject}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{formatDateTime(campaign.createdAt)} · {campaign.sentCount}/{campaign.recipientCount} envoyés{campaign.failedCount > 0 ? ` · ${campaign.failedCount} échecs` : ''}{campaign.skippedCount > 0 ? ` · ${campaign.skippedCount} désabonnés` : ''}</p>
+                  <p className="mt-0.5 text-xs ds-muted">{formatDateTime(campaign.createdAt)} · {campaign.sentCount}/{campaign.recipientCount} envoyés{campaign.failedCount > 0 ? ` · ${campaign.failedCount} échecs` : ''}{campaign.skippedCount > 0 ? ` · ${campaign.skippedCount} désabonnés` : ''}</p>
                 </div>
-                <span className="text-xs font-semibold text-muted-foreground">{{ sending: 'En cours', sent: 'Terminé', partial: 'Partiel', failed: 'Échec', interrupted: 'Interrompu' }[campaign.status]}</span>
+                <span className="text-xs font-semibold ds-muted">{{ sending: 'En cours', sent: 'Terminé', partial: 'Partiel', failed: 'Échec', interrupted: 'Interrompu' }[campaign.status]}</span>
               </li>
             )}
           </ul>}
       </section>
 
       {error ?
-        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p> :
+        <p role="alert" className="rounded-[14px] bg-[var(--ds-danger-soft)] p-4 text-sm text-[var(--ds-danger)]">{error}</p> :
         loading ?
-          <p className="py-10 text-center text-sm text-muted-foreground">Chargement des abonnés...</p> :
+          <p className="py-10 text-center text-sm ds-muted">Chargement des abonnés...</p> :
           filtered.length === 0 ?
-            <div className="border-y border-border py-12 text-center">
-              <Mail className="mx-auto size-8 text-muted-foreground" />
+            <div className="ds-card py-12 text-center">
+              <Mail className="mx-auto size-8 ds-muted" />
               <p className="mt-3 text-sm font-medium">{query ? 'Aucun résultat' : 'Aucun abonné pour le moment'}</p>
             </div> :
-            <ul className="divide-y divide-border border-y border-border">
+            <ul className="ds-card divide-y divide-[var(--ds-border)] overflow-hidden px-4">
               {filtered.map((subscriber) =>
                 <li key={subscriber.id} className="flex flex-wrap items-center gap-3 py-3.5">
                   <div className="min-w-0 flex-1">
                     <p className="break-all text-sm font-medium">{subscriber.email}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
+                    <p className="mt-0.5 text-xs ds-muted">
                       {subscriber.confirmedAt ? `Confirmé le ${formatDateTime(subscriber.confirmedAt)}` : `En attente depuis le ${formatDateTime(subscriber.createdAt)}`}
                     </p>
                   </div>
                   {removingId === subscriber.id ?
                     <div className="flex items-center gap-2 text-xs">
                       <span>Retirer cette adresse ?</span>
-                      <button type="button" onClick={() => setRemovingId(null)} className="rounded-lg border border-border px-2.5 py-2">Annuler</button>
-                      <button type="button" disabled={busyId === subscriber.id} onClick={() => removeSubscriber(subscriber.id)} className="rounded-lg bg-red-600 px-2.5 py-2 font-semibold text-white disabled:opacity-50">Retirer</button>
+                      <button type="button" onClick={() => setRemovingId(null)} className="ds-btn ds-btn--outline ds-btn--sm">Annuler</button>
+                      <button type="button" disabled={busyId === subscriber.id} onClick={() => removeSubscriber(subscriber.id)} className="ds-btn ds-btn--sm" style={{ background: 'var(--ds-danger)', color: '#fff' }}>Retirer</button>
                     </div> :
                     <div className="flex items-center gap-1.5">
-                      {subscriber.confirmedAt && <button type="button" title="Copier le lien de désabonnement" aria-label={`Copier le lien de désabonnement de ${subscriber.email}`} onClick={() => copyUnsubscribeLink(subscriber.unsubscribeToken)} className="grid size-9 place-items-center rounded-lg border border-border"><Copy className="size-4" /></button>}
-                      <button type="button" title="Retirer l'abonné" aria-label={`Retirer ${subscriber.email}`} onClick={() => setRemovingId(subscriber.id)} className="grid size-9 place-items-center rounded-lg border border-border text-red-600"><Trash2 className="size-4" /></button>
+                      {subscriber.confirmedAt && <button type="button" title="Copier le lien de désabonnement" aria-label={`Copier le lien de désabonnement de ${subscriber.email}`} onClick={() => copyUnsubscribeLink(subscriber.unsubscribeToken)} className="ds-icon-btn ds-icon-btn--sm"><Copy className="size-4" /></button>}
+                      <button type="button" title="Retirer l'abonné" aria-label={`Retirer ${subscriber.email}`} onClick={() => setRemovingId(subscriber.id)} className="ds-icon-btn ds-icon-btn--sm" style={{ color: 'var(--ds-danger)' }}><Trash2 className="size-4" /></button>
                     </div>}
                 </li>
               )}
